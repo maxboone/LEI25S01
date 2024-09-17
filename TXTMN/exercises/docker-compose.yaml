@@ -1,0 +1,12 @@
+name: textminingexercises
+services:
+  jupyter:
+    image: jupyter/datascience-notebook
+    ports:
+      - 8888:8888
+    volumes:
+      - ./work:/home/jovyan/work
+      - ./.cache:/home/jovyan/.cache
+    command:
+      - start-notebook.sh
+      - --IdentityProvider.token=''
