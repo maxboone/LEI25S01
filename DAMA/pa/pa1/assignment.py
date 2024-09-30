@@ -238,11 +238,29 @@ class UVDecomposition:
         Note that is allowed and recommended to look at the implementation of the update_U
         function, that implements the same type of update on matrix U.
         """
-        # TO DO: retrieve the ratings associated to the target item (movie)
+        feature_update, item_index = index
+        M = []
 
-        # TO DO: implement the ALS update for item matrix V, following the same formula
-        #        used to update matrix U.
+        for column in data_train.T:
+            if column[0] == (item_index + 1):
+                M.append(column)
 
+        M = np.array(M)
+        sum_1, sum_2 = 0, 0
+
+        for row in range(M.shape[0]):
+            m = int(M[row, 1]) - 1
+            pred = (
+                np.dot(V[:, item_index], U[m, :])
+                - V[feature_update, item_index] * U[m, feature_update]
+            )
+            sum_1 += U[m, feature_update] * (M[row, 2] - pred)
+            sum_2 += U[m, feature_update] ** 2
+
+        if sum_2 == 0:
+            sum_2 = 0.001  # Prevent the denominator from being 0
+
+        V[feature_update, item_index] = sum_1 / sum_2
         return V
 
     def _train_iteration(self, U, V, data_train):
