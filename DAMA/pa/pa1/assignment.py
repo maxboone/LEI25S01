@@ -44,24 +44,43 @@ def similarity_matrix(matrix, k=5, axis=0):
     Note that it is allowed to convert the DataFrame into a Numpy array for faster computation.
     """
     similarity_dict = {}
-    matrix = matrix.fillna(0)
 
+    # Convert matrix to numpy array and fill unknowns
+    # with zeroes (note: this negatively affects unknowns)
+    matrix = matrix.fillna(0).to_numpy()
+
+    # If we are doing item-based, transpose the matrix
     if axis == 1:
-        matrix = matrix.transpose()
+        matrix = matrix.T
 
-    for u in matrix.index:
-        _u = matrix.iloc[u - 1]
-        similarity_dict[u] = []
+    # Take the index size of the matrix
+    index, _ = matrix.shape
 
-        for v in matrix.index:
+    # Loop over all users / items in the matrix
+    for u in range(1, index):
+        # Set the value to a temporary variable
+        _u = matrix[u][1:]
+        # Initialize the similarity dict for this user / item
+        similarity_dict[u + 1] = []
+
+        # Loop over all _other_ users / items
+        for v in range(1, index):
+            # Only if we are not comparing one to itself
             if u != v:
-                _v = matrix.iloc[v - 1]
+                # Set the value to a temporary variable
+                _v = matrix[v][1:]
                 # See slide 16/53: Find Nearest Neighbours
-                similarity_dict[u] += [(v, np.dot(_u, _v) / (norm(_u) * norm(_v)))]
+                # note that our user_ids and movie_ids are +1 compared to 0-index
+                similarity_dict[u + 1] += [
+                    (v + 1, np.dot(_u, _v) / (norm(_u) * norm(_v)))
+                ]
 
-    for u in similarity_dict.keys():
-        similarity_dict[u] = sorted(
-            similarity_dict[u], key=lambda x: x[1], reverse=True
+    # Loop over all users again
+    for u in range(1, index):
+        # Sort the output array by similarity, descending and slice the
+        # first k elements
+        similarity_dict[u + 1] = sorted(
+            similarity_dict[u + 1], key=lambda x: x[1], reverse=True
         )[:k]
 
     return similarity_dict
@@ -88,10 +107,15 @@ def user_based_cf(user_id, movie_id, user_similarity, user_item_matrix, k=5):
     selected in the similarity_matrix function used to create the user_similarity matrix provided
     as input to obtain a correct result.
     """
+    # Slice the top k elements and convert to numpy array
     top_k = user_similarity[user_id][:k]
+    _user_item_matrix = user_item_matrix.to_numpy()
+
+    # nansum (nan = 0) of the best-k-user's rating of the movie times the similarity
     numerator = np.nansum(
-        [user_item_matrix.iloc[i[0] - 1][movie_id] * i[1] for i in top_k]
+        [_user_item_matrix[i[0] - 1][movie_id - 1] * i[1] for i in top_k]
     )
+    # take the similarities of the top-k users
     denominator = np.nansum([i[1] for i in top_k])
 
     if denominator == 0:
@@ -122,8 +146,16 @@ def item_based_cf(user_id, movie_id, item_similarity, user_item_matrix, k=5):
     selected in the similarity_matrix function used to create the item_similarity matrix provided
     as input to obtain a correct result.
     """
+    # Slice the top k elements and convert the matrix to a numpy array
+    # and transpose as we are looking based on items
     top_k = item_similarity[movie_id][:k]
-    numerator = np.nansum([user_item_matrix[i[0]][user_id] * i[1] for i in top_k])
+    _user_item_matrix = user_item_matrix.to_numpy().T
+
+    # Take the most similar movies and multiply with the ratings
+    numerator = np.nansum(
+        [_user_item_matrix[i[0] - 1][user_id - 1] * i[1] for i in top_k]
+    )
+    # take the similarities of the top-k movies
     denominator = np.nansum([i[1] for i in top_k])
 
     if denominator == 0:
@@ -238,29 +270,30 @@ class UVDecomposition:
         Note that is allowed and recommended to look at the implementation of the update_U
         function, that implements the same type of update on matrix U.
         """
-        feature_update, item_index = index
+        feature_update, movie_index = index
         M = []
 
-        for column in data_train.T:
-            if column[0] == (item_index + 1):
-                M.append(column)
+        # Get rating data related to movie R
+        for movie in data_train:
+            if movie[1] == (movie_index + 1):
+                M.append(movie)
 
         M = np.array(M)
         sum_1, sum_2 = 0, 0
 
-        for row in range(M.shape[0]):
-            m = int(M[row, 1]) - 1
+        for rating in range(M.shape[0]):
+            user_index = int(M[rating, 0]) - 1
             pred = (
-                np.dot(V[:, item_index], U[m, :])
-                - V[feature_update, item_index] * U[m, feature_update]
+                np.dot(U[user_index, :], V[:, movie_index])
+                - U[user_index, feature_update] * V[feature_update, movie_index]
             )
-            sum_1 += U[m, feature_update] * (M[row, 2] - pred)
-            sum_2 += U[m, feature_update] ** 2
+            sum_1 += U[user_index, feature_update] * (M[rating, 2] - pred)
+            sum_2 += U[user_index, feature_update] ** 2
 
         if sum_2 == 0:
             sum_2 = 0.001  # Prevent the denominator from being 0
 
-        V[feature_update, item_index] = sum_1 / sum_2
+        V[feature_update, movie_index] = sum_1 / sum_2
         return V
 
     def _train_iteration(self, U, V, data_train):
@@ -310,31 +343,31 @@ if __name__ == "__main__":
 
     # You can use this section for testing the similarity_matrix function:
     # Return the top 5 most similar users to user 3:
-    user_similarity_matrix = similarity_matrix(df, k=5, axis=0)
-    print(user_similarity_matrix.get(3, []))
+    # user_similarity_matrix = similarity_matrix(df, k=5, axis=0)
+    # print(user_similarity_matrix.get(3, []))
 
     # Return the top 5 most similar items to item 10:
-    item_similarity_matrix = similarity_matrix(df, k=5, axis=1)
-    print(item_similarity_matrix.get(10, []))
+    # item_similarity_matrix = similarity_matrix(df, k=5, axis=1)
+    # print(item_similarity_matrix.get(10, []))
 
     # You can use this section for testing the user_based_cf and the item_based_cf functions:
     # Return the predicted ratings assigned by user 13 to movie 100:
     user_id = 13
     movie_id = 100
 
-    u_predicted_rating = user_based_cf(
-        user_id, movie_id, user_similarity_matrix, user_item_matrix=df, k=5
-    )
-    print(
-        f"predicted user {user_id} rating for movie {movie_id}, according to user-based collaborative filtering is: {u_predicted_rating:.2f}"
-    )
+    # u_predicted_rating = user_based_cf(
+    #     user_id, movie_id, user_similarity_matrix, user_item_matrix=df, k=5
+    # )
+    # print(
+    #     f"predicted user {user_id} rating for movie {movie_id}, according to user-based collaborative filtering is: {u_predicted_rating:.2f}"
+    # )
 
-    i_predicted_rating = item_based_cf(
-        user_id, movie_id, item_similarity_matrix, user_item_matrix=df, k=5
-    )
-    print(
-        f"predicted user {user_id} rating for movie {movie_id}, according to item-based collaborative filtering is: {i_predicted_rating:.2f}"
-    )
+    # i_predicted_rating = item_based_cf(
+    #     user_id, movie_id, item_similarity_matrix, user_item_matrix=df, k=5
+    # )
+    # print(
+    #     f"predicted user {user_id} rating for movie {movie_id}, according to item-based collaborative filtering is: {i_predicted_rating:.2f}"
+    # )
 
     # You can use this section for testing the update_V function within the UVDecomposition class:
     num_factors = 10
