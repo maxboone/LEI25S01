@@ -3,7 +3,6 @@ import sklearn
 from sklearn.model_selection import KFold
 import pandas as pd
 import numpy as np
-from numpy.linalg import norm
 import multiprocessing
 import random
 
@@ -71,9 +70,17 @@ def similarity_matrix(matrix, k=5, axis=0):
                 _v = matrix[v]
                 # See slide 16/53: Find Nearest Neighbours
                 # note that our user_ids and movie_ids are +1 compared to 0-index
+                #
+                # Fast implementation, with using np.linalg:
                 similarity_dict[u + 1] += [
-                    (v + 1, np.dot(_u, _v) / (norm(_u) * norm(_v)))
+                    (v + 1, np.dot(_u, _v) / (np.linalg.norm(_u) * np.linalg.norm(_v)))
                 ]
+                # Slower implementation, witout linalg dependency:
+                # _u_norm = np.sqrt(np.sum([x**2 for x in _u]))
+                # _v_norm = np.sqrt(np.sum([x**2 for x in _v]))
+                # similarity_dict[u + 1] += [
+                #     (v + 1, np.dot(_u, _v) / (_u_norm * _v_norm))
+                # ]
 
     # Loop over all users again
     for u in range(index):
