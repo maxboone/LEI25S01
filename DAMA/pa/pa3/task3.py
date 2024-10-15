@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
+
 # Function to generate the dataset
 def generate_swiss_roll(n_samples, noise=0.1, random_state=2024):
     """
@@ -20,8 +21,11 @@ def generate_swiss_roll(n_samples, noise=0.1, random_state=2024):
     Returns:
     tuple: Generated data (X) and the color labels (color)
     """
-    X, color = make_swiss_roll(n_samples=n_samples, noise=noise, random_state=random_state)
+    X, color = make_swiss_roll(
+        n_samples=n_samples, noise=noise, random_state=random_state
+    )
     return X, color
+
 
 # Function to apply PCA to the dataset
 def apply_pca(X, n_components, random_state=2024):
@@ -37,10 +41,13 @@ def apply_pca(X, n_components, random_state=2024):
     array: Transformed data with PCA applied.
     """
     # TO DO: Create a pipeline to apply StandardScaler and PCA
-
-
+    pipeline = make_pipeline(
+        StandardScaler(), PCA(n_components=n_components, random_state=random_state)
+    )
+    X_pca = pipeline.fit_transform(X)
 
     return X_pca
+
 
 # Function to plot the original 3D data
 def plot_3d_data(X, color):
@@ -52,9 +59,13 @@ def plot_3d_data(X, color):
     color (array): The color labels for the points.
     """
     # TO DO: Use scatter plot to visualize the original data in 3D space
-
-
-
+    ax = plt.figure().add_subplot(projection="3d")
+    ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=color, cmap="viridis")
+    ax.set_title("3D")
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
+    plt.show()
 
 
 # Function to plot the XZ projection
@@ -67,9 +78,12 @@ def plot_xz_projection(X, color):
     color (array): The color labels for the points.
     """
     # TO DO: Use scatter plot to visualize the XZ projection
-
-
-
+    ax = plt.figure().add_subplot()
+    ax.scatter(X[:, 0], X[:, 2], c=color, cmap="viridis")
+    ax.set_title("2D: XZ")
+    ax.set_xlabel("X")
+    ax.set_ylabel("Z")
+    plt.show()
 
 
 # Function to plot the 2D PCA projection
@@ -82,18 +96,21 @@ def plot_pca_projection(X_pca, color):
     color (array): The color labels for the points.
     """
     # TO DO: Use scatter plot to visualize the 2D projection from PCA
-
-
-
+    ax = plt.figure().add_subplot()
+    ax.scatter(X_pca[:, 0], X_pca[:, 1], c=color, cmap="viridis")
+    ax.set_title("2D: PCA")
+    ax.set_xlabel("F1")
+    ax.set_ylabel("F2")
+    plt.show()
 
 
 if __name__ == "__main__":
     np.random.seed(2024)
     X, color = generate_swiss_roll(n_samples=1500, noise=0.1, random_state=2024)
 
-    #TO DO: Fill in appropriate value for n_components
-    X_pca = apply_pca(X, n_components=_____, random_state=2024) # Apply PCA
+    # TO DO: Fill in appropriate value for n_components
+    X_pca = apply_pca(X, n_components=2, random_state=2024)  # Apply PCA
 
-    plot_3d_data(X, color)              # Visualize the original 3D dataset
-    plot_xz_projection(X, color)        # Visualize the XZ projection
-    plot_pca_projection(X_pca, color)   # Visualize the PCA 2D projection
+    plot_3d_data(X, color)  # Visualize the original 3D dataset
+    plot_xz_projection(X, color)  # Visualize the XZ projection
+    plot_pca_projection(X_pca, color)  # Visualize the PCA 2D projection
