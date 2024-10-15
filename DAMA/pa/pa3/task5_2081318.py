@@ -86,7 +86,7 @@ if __name__ == "__main__":
         X,
         n_components=2,
         perplexity=40,
-        max_iter=2000,
+        max_iter=5000,
         init="pca",
         random_state=2024,
     )
