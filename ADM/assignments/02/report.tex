@@ -7,9 +7,9 @@
 \geometry{margin=1in}
 
 \title{
-  NYC Yellow Taxi Dataset
+  NYC Yellow Taxi Dataset \\
 \small Performance Comparison of Pandas, SQLite, and DuckDB}
-\author{Max Boone <s2081318>}
+\author{Max Boone (s2081318)}
 \date{\today}
 
 \begin{document}
@@ -23,8 +23,7 @@ between processing and analyzing the NYC Cab dataset from 2016. All
 analyses are done through Pandas, SQLite and DuckDB. Experiments are 
 executed on a CAX41 machine from Hetzner Cloud. This
 machine has 32 GiB ECC RAM and 16 Neoverse N1 cores.
-
-Teh report is structured as follows. First, the data
+The report is structured as follows. First, the data
 loading step is reviewed. Second, two queries that test general
 performance of the database are run and discussed. Finally, a simple
 linear model on the data is calculated and discussed.
@@ -35,8 +34,7 @@ The dataset was provided as a parquet file. Pandas and DuckDB offer
 native functionality to load parquet files into the internal data
 structure. SQLite does not offer this functionality it self, and
 the data is first loaded into memory by pandas before writing to
-SQLite. Only the SQLite part is measured there. 
-
+SQLite. Only the SQLite part is measured there.
 The execution times are as follows:
 
 \begin{itemize}
@@ -61,7 +59,7 @@ presents the entire dataset in one query to the SQLite engine instead of in batc
 that can be written asynchronously to the WAL.
 
 \section{Query Performance}
-\subsection{Query 1: \textit{[Distinct Counts]}}
+\subsection{Query 1: Distinct Counts}
 
 The first query counts the distinct values for each dataset, the execution times
 are as follows:
@@ -81,7 +79,7 @@ likely retrieves every row for every column which causes a lot of duplicate valu
 be loaded. It is however strange that the in-memory database does not perform better,
 possibly due to the amount of available memory the caches are doing their work well.
 
-\subsection{Query 2: \textit{[Aggergation and Grouping]}}
+\subsection{Query 2: Aggregation and Grouping}
 
 The second query aggregates data from the dataset and gives descriptives for each
 day-hour combination. The execution times are as follows:
@@ -100,22 +98,35 @@ are likely due to the same reasons as discussed in the previous query.
 
 \section{Machine Learning: Fare Estimation}
 
+The final performance comparison is done through the computation of a linear regression.
+Essentially, this consists of two steps. First, the data points are filtered to the range
+from zero to a z-score of 3 (in other words, 3 standard deviations from the mean). Then,
+the covariance over variance gives the required input (beta) to calculate a linear 
+regression. The execution times to filter the data and calculate the regressions are 
+as follows:
+
 \begin{itemize}
-  \item \textbf{Pandas:} GG seconds
-  \item \textbf{SQLite:} HH seconds
-  \item \textbf{DuckDB:} II seconds
+  \item \textbf{Pandas}: 1.13s
+  \item \textbf{SQLite}: 8.24s
+  \item \textbf{SQLite (Memory)}: 7.59s
+  \item \textbf{DuckDB}: 0.08s
+  \item \textbf{DuckDB (Memory)}: 0.07s
 \end{itemize}
-\textbf{Discussion:} Analysis of why certain systems performed better
-or worse for machine learning tasks, considering factors such as
-computational overhead, internal optimizations, and memory management.
+
+Again, the performance of DuckDB blows SQLite and Pandas out of the water.
+One of the possible differences in performance is that all the calculations for DuckDB
+can be done in a single query to the query planner while SQLite and Pandas treat these
+as separate steps.
 
 \section{Conclusion}
-This report has provided a comparison of Pandas, SQLite, and DuckDB
-in terms of their performance for loading data, querying, and
-performing machine learning tasks. Based on the observed execution
-times, DuckDB shows advantages in XYZ tasks, while Pandas/SQLite
-performed better in ABC tasks. Further research could investigate
-additional optimizations and the scalability of these systems with
-larger datasets.
+
+The tests show that DuckDB offers the fastest implementation for the analytical workloads
+tested in this assignment. The first-class support for file formats, various aggregation 
+functions and the ease of testing query in the separate CLI / REPL lifts a barrier moving 
+from analytical development kits such as R and libraries such as Pandas.
+The lack of difference with in-memory databases shows use of good caching 
+of both SQLite and DuckDB, to further test where performance gains are realized it would
+be useful to run the tests with a larger than memory dataset and investigate the outcomes
+from the engines' query planners.
 
 \end{document}
