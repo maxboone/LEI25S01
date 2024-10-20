@@ -1,0 +1,121 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{
+  NYC Yellow Taxi Dataset
+\small Performance Comparison of Pandas, SQLite, and DuckDB}
+\author{Max Boone <s2081318>}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This report provides a short analysis of the performance differences
+between processing and analyzing the NYC Cab dataset from 2016. All
+analyses are done through Pandas, SQLite and DuckDB. Experiments are 
+executed on a CAX41 machine from Hetzner Cloud. This
+machine has 32 GiB ECC RAM and 16 Neoverse N1 cores.
+
+Teh report is structured as follows. First, the data
+loading step is reviewed. Second, two queries that test general
+performance of the database are run and discussed. Finally, a simple
+linear model on the data is calculated and discussed.
+
+\section{Data Loading}
+
+The dataset was provided as a parquet file. Pandas and DuckDB offer
+native functionality to load parquet files into the internal data
+structure. SQLite does not offer this functionality it self, and
+the data is first loaded into memory by pandas before writing to
+SQLite. Only the SQLite part is measured there. 
+
+The execution times are as follows:
+
+\begin{itemize}
+  \item \textbf{Pandas:} 1.30 seconds
+  \item \textbf{SQLite:} 109.71 seconds
+  \item \textbf{DuckDB:} 12.70 seconds
+\end{itemize}
+
+DuckDB and SQLite store the resulting database file on disk and this
+already shows some difference in performance. The resulting SQLite database
+is around 1.2 GiB in size and the DuckDB database around 211 MiB. For a fairer
+comparison, and to rule out disk overhead, a cursor for SQLite and DuckDB was
+also set up in-memory.
+
+\begin{itemize}
+  \item \textbf{SQLite (Memory):} 106.50 seconds
+  \item \textbf{DuckDB (Memory):} 5.97 seconds
+\end{itemize}
+
+One of the reasons that SQLite is this slow in data loading might be that pandas
+presents the entire dataset in one query to the SQLite engine instead of in batches
+that can be written asynchronously to the WAL.
+
+\section{Query Performance}
+\subsection{Query 1: \textit{[Distinct Counts]}}
+
+The first query counts the distinct values for each dataset, the execution times
+are as follows:
+
+\begin{itemize}
+  \item \textbf{Pandas}: 2.80s
+  \item \textbf{SQLite}: 37.34s
+  \item \textbf{SQLite (Memory)}: 37.79s
+  \item \textbf{DuckDB}: 0.53s
+  \item \textbf{DuckDB (Memory)}: 0.47s
+\end{itemize}
+
+DuckDB is a clear winner in this section, as is expected from the columnar storage
+format of the database. Likely the strategy that it uses to count these columns is
+as efficient as Pandas, but it can partition the query and use multiprocessing. SQLite
+likely retrieves every row for every column which causes a lot of duplicate values to
+be loaded. It is however strange that the in-memory database does not perform better,
+possibly due to the amount of available memory the caches are doing their work well.
+
+\subsection{Query 2: \textit{[Aggergation and Grouping]}}
+
+The second query aggregates data from the dataset and gives descriptives for each
+day-hour combination. The execution times are as follows:
+
+\begin{itemize}
+  \item \textbf{Pandas}: 0.93s
+  \item \textbf{SQLite}: 13.51s
+  \item \textbf{SQLite (Memory)}: 13.26s
+  \item \textbf{DuckDB}: 0.03s
+  \item \textbf{DuckDB (Memory)}: 0.03s
+\end{itemize}
+
+Again the queries from DuckDB are the fastest, likely this is due to the implementation
+of the fully parallelized aggregate hash table that DuckDB employs. Other time differences
+are likely due to the same reasons as discussed in the previous query.
+
+\section{Machine Learning: Fare Estimation}
+
+\begin{itemize}
+  \item \textbf{Pandas:} GG seconds
+  \item \textbf{SQLite:} HH seconds
+  \item \textbf{DuckDB:} II seconds
+\end{itemize}
+\textbf{Discussion:} Analysis of why certain systems performed better
+or worse for machine learning tasks, considering factors such as
+computational overhead, internal optimizations, and memory management.
+
+\section{Conclusion}
+This report has provided a comparison of Pandas, SQLite, and DuckDB
+in terms of their performance for loading data, querying, and
+performing machine learning tasks. Based on the observed execution
+times, DuckDB shows advantages in XYZ tasks, while Pandas/SQLite
+performed better in ABC tasks. Further research could investigate
+additional optimizations and the scalability of these systems with
+larger datasets.
+
+\end{document}
