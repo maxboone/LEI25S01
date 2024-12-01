@@ -2,13 +2,14 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{hyperref}
-\usepackage{listings}
 \usepackage{geometry}
+\input{listings.tex}
+
 \geometry{margin=1in}
 
 \title{
   Branch-prediction effects in quick sort \\
-\small QuickSort with and without branching in the partitioning function}
+\small Quick sort with and without branching in the partitioning function}
 \author{Max Boone (s2081318)}
 \date{\today}
 
@@ -38,11 +39,45 @@ if the element is smaller than the chosen pivot. Due to the randomness
 of this operation the branch predictor is likely to mispredict whether
 to jump or not to the swapping instruction. As an optimization, this is
 replaced by a conditional assignment and a temporary variable, to avoid
-having to jump to another instruction.
+having to jump to another instruction. The main difference between the
+functions is shown in Listing 1.
+
+\begin{lstlisting}[language=rust, caption={Both partitioning implementations in Rust}, captionpos=b]
+/// Branchless implementation
+for j in 0..high {
+    let c = list[j] <= list[high];
+    let t = list[i];
+    list[i] = list[j] * c as u32 + t * (1 - c as u32);
+    list[j] = t * c as u32 + list[j] * (1 - c as u32);
+    i += c as usize;
+}
+
+/// Branching implementation
+for j in 0..high {
+    if list[j] <= list[high] {
+        list.swap(i, j);
+        i += 1;
+    }
+}
+\end{lstlisting}
+
+In the compiled assembler for the branchless implementation it shows that the 
+first two list accesses get a branching instruction to check for out-of-bounds
+access. However, as in-bounds access is certain, the branch predictor will not
+suffer here. Then, the conditional is calculated and the swapping is implemented
+with conditional-move instructions.
+
+The branching implementation is compiled in fewer instructions, it also does the
+out-of-bounds checks, but jumps to the swapping and increasing instructions if the
+condition evaluates to true. If the result of the condition is random, the branch
+predictor will have branch misses here.
 
 \section{Performance}
 
-
+Each sorting run gets one warm-up run to get the file contents loaded
+and cached into memory. Even though only the sorting time is counted, a
+difference between a cold and warm run was observed during testing.
+Only warm runs are used in the results.
 
 \section{Conclusion}
 

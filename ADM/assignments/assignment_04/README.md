@@ -59,3 +59,11 @@ Test if the output is correct:
 diff ./data/test.csv.branching <(cat ./data/test.csv | sort -n)
 diff ./data/test.csv.condition <(cat ./data/test.csv | sort -n)
 ```
+
+# Benchmark
+
+Run the benchmark script and provide the perf binary:
+
+```bash
+PERF=/usr/lib/linux-tools-6.8.0-49/perf ./scripts/bench.sh
+```
