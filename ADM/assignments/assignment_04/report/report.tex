@@ -11,8 +11,8 @@
 \geometry{margin=1in}
 
 \title{
-  Branch-prediction effects in quick sort \\
-\small Quick sort with and without branching in the partitioning function}
+  Branch-prediction Effects in Quick Sort \\
+\small Quick Sort with and Without Branching in the Partitioning Function}
 \author{Max Boone (s2081318)}
 \date{\today}
 
@@ -23,8 +23,8 @@
 \section{Introduction}
 
 This report briefly describes and benchmarks two implementations of
-quicksort, one implementation that uses an branching if-statement in
-its partitioning function and one that uses an assigned conditional
+quicksort: one implementation that uses a branching if-statement in
+its partitioning function, and one that uses an assigned conditional
 to avoid branch misses. First, the implementation of the sorting
 algorithm is discussed. Then, performance results of sorting are
 provided. Finally, the results are concluded.
@@ -33,20 +33,20 @@ provided. Finally, the results are concluded.
 
 The quicksort algorithm can be divided into two steps. First, the sorting
 algorithm calls a partitioning function that separates the list into a partition
-with the smallest and partition with the largest numbers. A pivot index shows
+with the smallest and a partition with the largest numbers. A pivot index shows
 where the partitions are split. Second, the sorting algorithm is called recursively
 on the left and right constituents and sorts them independently.
 
 In the partitioning function, a conditional swapping is done based on
-if the element is smaller than the chosen pivot. Due to the randomness
-of this operation the branch predictor is likely to mispredict whether
+whether the element is smaller than the chosen pivot. Due to the randomness
+of this operation, the branch predictor is likely to mispredict whether
 to jump or not to the swapping instruction. As an optimization, this is
 replaced by a conditional assignment and a temporary variable, to avoid
 having to jump to another instruction. The main difference between the
 functions is shown in Listing 1.
 
 \begin{lstlisting}[language=rust, caption={Both partitioning implementations in Rust}, captionpos=b]
-/// Branchless implementation
+/// Branchless implementation (cargo build --features condition)
 for j in 0..high {
     let c = list[j] <= list[high];
     let t = list[i];
@@ -55,7 +55,7 @@ for j in 0..high {
     i += c as usize;
 }
 
-/// Branching implementation
+/// Branching implementation (cargo build --features branching)
 for j in 0..high {
     if list[j] <= list[high] {
         list.swap(i, j);
@@ -64,28 +64,28 @@ for j in 0..high {
 }
 \end{lstlisting}
 
-In the final compiled instructions for the branchless implementation the 
+In the final compiled instructions for the branchless implementation, the 
 first two list accesses get a branching instruction to check for out-of-bounds
 access. However, as in-bounds access is certain, the branch predictor will not
-suffer here. Then, the conditional is calculated and the swapping is implemented
+suffer here. Then, the conditional is calculated, and the swapping is implemented
 with conditional-move instructions.
 
-The branching implementation is compiled in fewer instructions, it also does the
-out-of-bounds checks, but jumps to the swapping and increasing instructions if the
+The branching implementation is compiled in fewer instructions. It also does the
+out-of-bounds checks but jumps to the swapping and incrementing instructions if the
 condition evaluates to true. If the result of the condition is random, the branch
 predictor will have branch misses here.
 
 \section{Performance}
 
 The system used for the benchmarks is a Surface Pro X SQ2 device 
-with an Kryo-4XX-Gold ARMv8 SoC and 16 GiB of LPDDR4 4266 MHz RAM.
+with a Kryo-4XX-Gold ARMv8 SoC and 16 GiB of LPDDR4 4266 MHz RAM.
 
 Each sorting run gets one warm-up run to get the file contents loaded
 and cached into memory. Even though only the sorting time is counted, a
 difference between a cold and warm run was observed during testing.
 Only warm runs are used in the results. The runtime is measured in the
 application by timings around the highest call of the sort function.
-A branch miss counter from the Linux \texttt{perf} API is used in around
+A branch miss counter from the Linux \texttt{perf} API is used around
 the sort function.
 
 \begin{table}[h!]
@@ -101,10 +101,10 @@ the sort function.
     \end{tabular}
 \end{table}
 
-In Figure 1 we see the runtimes of both implementations next to eachother. The branchless
-implementation on the right is generally faster with a speedup of 1.42 on average, further
-descriptives given in Table 1.
-In Figure 2 we see the branch misses of both implementations, as expected, the branching 
+In Figure 1, we see the runtimes of both implementations next to each other. The branchless
+implementation on the right is generally faster, with a speedup of 1.42 on average; further
+descriptives are given in Table 1.
+In Figure 2, we see the branch misses of both implementations. As expected, the branching 
 implementation has many more branch misses than the branchless implementation. Furthermore,
 the branch misses occur more on datasets that are (more) randomly distributed.
 
@@ -145,15 +145,16 @@ the branch misses occur more on datasets that are (more) randomly distributed.
         \label{fig:misses_branchless}
     \end{subfigure}
     \caption{Branch misses in sorting function.}
-    \label{fig:elapsed_time}
+    \label{fig:misses}
 \end{figure}
 
 \section{Conclusion}
 
 The speedup of the branchless implementation is not as large as initially expected. 
 This might be due to the architecture of 
-the used processor, or due to the compiler inserting branching instructions to check for
+the used processor or due to the compiler inserting branching instructions to check for
 out-of-bounds access. Nevertheless, the experiments confirm that the branch mispredictions
 are mitigated using the branchless implementation.
 
 \end{document}
+
