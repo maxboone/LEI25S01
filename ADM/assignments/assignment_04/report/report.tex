@@ -1,0 +1,49 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{
+  Branch-prediction effects in quick sort \\
+\small QuickSort with and without branching in the partitioning function}
+\author{Max Boone (s2081318)}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This report briefly describes and benchmarks two implementations of
+quicksort, one implementation that uses an branching if-statement in
+its partitioning function and one that uses an assigned conditional
+to avoid branch misses. First, the implementation of the sorting
+algorithm is discussed. Then, performance results of sorting are
+provided.
+
+\section{Implementation}
+
+The quicksort algorithm works in two main steps. First, a partition
+function divides the list into two parts by swapping elements to
+ensure those smaller than a chosen pivot are on the left and larger
+ones are on the right. Second, quicksort is applied recursively to
+each part until the whole list is sorted.
+
+In the partitioning function, a conditional swapping is done based on
+if the element is smaller than the chosen pivot. Due to the randomness
+of this operation the branch predictor is likely to mispredict whether
+to jump or not to the swapping instruction. As an optimization, this is
+replaced by a conditional assignment and a temporary variable, to avoid
+having to jump to another instruction.
+
+\section{Performance}
+
+
+
+\section{Conclusion}
+
+\end{document}
