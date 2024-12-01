@@ -1,19 +1,19 @@
-pub fn sort(list: &mut [u32], low: usize, high: usize) {
-    if low >= high {
+pub fn sort(list: &mut [u32]) {
+    if list.is_empty() {
         return;
     }
 
-    let pivot = partition(list, low, high);
-    sort(list, low, pivot - 1);
-    sort(list, pivot + 1, high);
+    let pivot = partition(list);
+    sort(&mut list[..pivot]);
+    sort(&mut list[pivot + 1..]);
 }
 
-fn partition(list: &mut [u32], low: usize, high: usize) -> usize {
-    let pivot = list[high];
-    let mut i = low;
+fn partition(list: &mut [u32]) -> usize {
+    let high = list.len() - 1;
+    let mut i = 0;
 
-    for j in low..high {
-        let c = list[j] <= pivot;
+    for j in 0..high {
+        let c = list[j] <= list[high];
         let t = list[i];
         list[i] = list[j] * c as u32 + t * (1 - c as u32);
         list[j] = t * c as u32 + list[j] * (1 - c as u32);

@@ -52,3 +52,10 @@ Then run the binaries, pointing to your local linux-perf install:
 PERF=/usr/lib/linux-tools-6.8.0-49/perf ./bin/branching 100000 ./data/test.csv > ./data/test.csv.branching
 PERF=/usr/lib/linux-tools-6.8.0-49/perf ./bin/condition 100000 ./data/test.csv > ./data/test.csv.condition
 ```
+
+Test if the output is correct:
+
+```bash
+diff ./data/test.csv.branching <(cat ./data/test.csv | sort -n)
+diff ./data/test.csv.condition <(cat ./data/test.csv | sort -n)
+```

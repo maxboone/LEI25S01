@@ -12,13 +12,13 @@ pub fn sort(list: &mut [u32]) {
 
     if cfg!(feature = "branching") {
         eprintln!("INFO - sorting using branching implementation");
-        branching::sort(list, 0, len - 1);
+        branching::sort(list);
         return;
     }
 
     if cfg!(feature = "condition") {
         eprintln!("INFO - sorting using condition-assign implementation");
-        condition::sort(list, 0, len - 1);
+        condition::sort(list);
         return;
     }
 
