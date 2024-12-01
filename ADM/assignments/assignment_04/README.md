@@ -46,7 +46,7 @@ Generate a file with random integers to sort:
 head -c $((100000 * 4)) /dev/urandom | od -An -tu4 | tr -s ' ' '\n' | tail -n+1 > ./data/test.csv
 ```
 
-Then run the binaries, pointing to your local linux-perf install:
+Then run the binaries, pointing to your local Linux perf binary:
 
 ```bash
 PERF=/usr/lib/linux-tools-6.8.0-49/perf ./bin/branching 100000 ./data/test.csv > ./data/test.csv.branching

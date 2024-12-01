@@ -13,7 +13,7 @@ pub fn load(n: u32, path: PathBuf) -> Vec<u32> {
                 Ok(line) => {
                     count += 1;
 
-                    if count >= n {
+                    if count > n {
                         return elements;
                     }
 
