@@ -14,7 +14,7 @@ pub fn load(n: u32, path: PathBuf) -> Vec<u32> {
                     count += 1;
 
                     if count > n {
-                        return elements;
+                        break;
                     }
 
                     match line.parse::<u32>() {
