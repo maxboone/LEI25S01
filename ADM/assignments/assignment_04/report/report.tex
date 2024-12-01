@@ -3,6 +3,9 @@
 \usepackage{amsmath}
 \usepackage{hyperref}
 \usepackage{geometry}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
 \input{listings.tex}
 
 \geometry{margin=1in}
@@ -24,15 +27,15 @@ quicksort, one implementation that uses an branching if-statement in
 its partitioning function and one that uses an assigned conditional
 to avoid branch misses. First, the implementation of the sorting
 algorithm is discussed. Then, performance results of sorting are
-provided.
+provided. Finally, the results are concluded.
 
 \section{Implementation}
 
-The quicksort algorithm works in two main steps. First, a partition
-function divides the list into two parts by swapping elements to
-ensure those smaller than a chosen pivot are on the left and larger
-ones are on the right. Second, quicksort is applied recursively to
-each part until the whole list is sorted.
+The quicksort algorithm can be divided into two steps. First, the sorting
+algorithm calls a partitioning function that separates the list into a partition
+with the smallest and partition with the largest numbers. A pivot index shows
+where the partitions are split. Second, the sorting algorithm is called recursively
+on the left and right constituents and sorts them independently.
 
 In the partitioning function, a conditional swapping is done based on
 if the element is smaller than the chosen pivot. Due to the randomness
@@ -61,7 +64,7 @@ for j in 0..high {
 }
 \end{lstlisting}
 
-In the compiled assembler for the branchless implementation it shows that the 
+In the final compiled instructions for the branchless implementation the 
 first two list accesses get a branching instruction to check for out-of-bounds
 access. However, as in-bounds access is certain, the branch predictor will not
 suffer here. Then, the conditional is calculated and the swapping is implemented
@@ -74,11 +77,83 @@ predictor will have branch misses here.
 
 \section{Performance}
 
+The system used for the benchmarks is a Surface Pro X SQ2 device 
+with an Kryo-4XX-Gold ARMv8 SoC and 16 GiB of LPDDR4 4266 MHz RAM.
+
 Each sorting run gets one warm-up run to get the file contents loaded
 and cached into memory. Even though only the sorting time is counted, a
 difference between a cold and warm run was observed during testing.
-Only warm runs are used in the results.
+Only warm runs are used in the results. The runtime is measured in the
+application by timings around the highest call of the sort function.
+A branch miss counter from the Linux \texttt{perf} API is used in around
+the sort function.
+
+\begin{table}[h!]
+    \centering
+    \caption{Speedup (Branching Time / Branchless Time)}
+    \label{tab:speedup_descriptive}
+    \begin{tabular}{ccccccc}
+        \toprule
+        Mean & Std Dev & Min & 25\% & Median (50\%) & 75\% & Max \\
+        \midrule
+        1.429 & 0.544 & 0.819 & 1.097 & 1.128 & 1.736 & 3.876 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+In Figure 1 we see the runtimes of both implementations next to eachother. The branchless
+implementation on the right is generally faster with a speedup of 1.42 on average, further
+descriptives given in Table 1.
+In Figure 2 we see the branch misses of both implementations, as expected, the branching 
+implementation has many more branch misses than the branchless implementation. Furthermore,
+the branch misses occur more on datasets that are (more) randomly distributed.
+
+\begin{figure}[htbp]
+    \centering
+    % First graph
+    \begin{subfigure}[b]{0.40\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../graphs/branching_elapsed.png}
+        \caption{Branching}
+        \label{fig:elapsed_branching}
+    \end{subfigure}
+    % Second graph
+    \begin{subfigure}[b]{0.40\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../graphs/condition-assign_elapsed.png}
+        \caption{Branchless}
+        \label{fig:elapsed_branchless}
+    \end{subfigure}
+    \caption{Elapsed time to sort datasets.}
+    \label{fig:elapsed_time}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    % First graph
+    \begin{subfigure}[b]{0.40\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../graphs/branching_misses.png}
+        \caption{Branching}
+        \label{fig:misses_branching}
+    \end{subfigure}
+    % Second graph
+    \begin{subfigure}[b]{0.40\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../graphs/condition-assign_misses.png}
+        \caption{Branchless}
+        \label{fig:misses_branchless}
+    \end{subfigure}
+    \caption{Branch misses in sorting function.}
+    \label{fig:elapsed_time}
+\end{figure}
 
 \section{Conclusion}
+
+The speedup of the branchless implementation is not as large as initially expected. 
+This might be due to the architecture of 
+the used processor, or due to the compiler inserting branching instructions to check for
+out-of-bounds access. Nevertheless, the experiments confirm that the branch mispredictions
+are mitigated using the branchless implementation.
 
 \end{document}

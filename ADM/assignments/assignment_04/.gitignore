@@ -3,3 +3,4 @@ target/
 data/
 bin/
 contrib/
+.ipynb_checkpoints
