@@ -20,19 +20,23 @@ pub fn load(n: u32, path: PathBuf) -> Vec<u32> {
                     match line.parse::<u32>() {
                         Ok(number) => elements.push(number),
                         Err(err) => {
-                            eprintln!("failed to parse number from line: {}", err);
+                            eprintln!("ERR - failed to parse number from line: {}", err);
                             exit(1);
                         }
                     };
                 }
                 Err(err) => {
-                    eprintln!("failed to retrieve line: {:?}", err);
+                    eprintln!("ERR - failed to retrieve line: {:?}", err);
                     exit(1);
                 }
             }
         }
     }
-    eprintln!("loaded {} elements from {:?}", elements.len(), path.clone());
+    eprintln!(
+        "INFO - loaded {} elements from {:?}",
+        elements.len(),
+        path.clone()
+    );
     elements
 }
 
