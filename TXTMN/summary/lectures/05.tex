@@ -73,29 +73,34 @@ guidelines until they are. Ensure that the guidelines are clearly defined
 but not too trivial.
 
 With the instructions, you can use crowdsourcing (mTurk, Crowdflower) or
-domain experts to annotate the texts. Compare the labels by different 
-annotators on the same text to estimate the reliability of the data 
+domain experts to annotate the texts. Compare the labels by different
+annotators on the same text to estimate the reliability of the data
 (inter-rater agreement).
 
-Ensure that you have at at least dozens/hundreds per category, the more the better
-and the more difficult the problem, the more examples you need. If you use crowdsourcing,
-ensure that you have a check in the task, i.e. dummy questions, or say the work is compared
+Ensure that you have at at least dozens/hundreds per category, the
+more the better
+and the more difficult the problem, the more examples you need. If
+you use crowdsourcing,
+ensure that you have a check in the task, i.e. dummy questions, or
+say the work is compared
 to expert annotations.
 
 \subsubsection{Quality Control}
 
-Ensure that the same text is labelled by multiple persons, such that you can measure
-the agreement over labels between different annotators. This gives the reliability of
-the annotated data and can also be used as a measure for the difficulty of the task.
+Ensure that the same text is labelled by multiple persons, such that
+you can measure
+the agreement over labels between different annotators. This gives
+the reliability of
+the annotated data and can also be used as a measure for the
+difficulty of the task.
 A measure to use for that is Cohen's Kappa:
 
 \begin{definition}[Cohen's Kappa]
   \begin{align*}
-    \Kappa = \frac{p(a) - p(e)}{1 - p(e)}
+    \kappa = \frac{p(a) - p(e)}{1 - p(e)}
   \end{align*}
 
   Where $p(a)$ is the agreed percentage, and $pr(e)$ the expected agreement
   based on the occurrence of each of the values.
 \end{definition}
-
 
