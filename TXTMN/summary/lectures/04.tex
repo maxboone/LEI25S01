@@ -77,8 +77,15 @@ term occurs in and
 takes the log of the inverse of that.
 
 \begin{definition}[Tf-Idf]
-  $tf = 1 + log(\text{term}_\text{count})$, $idf =
-  log(\frac{|\text{docs}|}{df_\text{term}})$, $tf \times idf$.
+  \begin{align*}
+    \text{tf} = 1 + \log(\text{term}_\text{count})
+  \end{align*}
+  \begin{align*}
+    \text{idf} = \log(\frac{|\text{documents}|}{df_\text{term}})
+  \end{align*}
+  \begin{align*}
+    \text{tf-idf} = \text{tf} \times \text{idf}
+  \end{align*}
 \end{definition}
 
 \subsubsection{Classifier Learning}
@@ -129,6 +136,19 @@ This results in a correct estimation, but inaccurate probabilities,
 as only the ordering
 can be used to estimate the correct class.
 
+\begin{definition}[Naive Bayes]
+  ~\\
+  \begin{align*}
+    y = \operatorname*{argmax}_{k \in {1, ..., K}} p(C_k)
+    \prod^n_{i=1} p(x_i | C_k)
+  \end{align*}
+  \\
+  Where $x_i$ is the probability of the term in the class, meaning how often
+  it occurs in this document, divided by how often it occurs in the class.
+  Apply add-one (laplace) smoothing such that words that don't occur in the
+  document don't make the probability zero.
+\end{definition}
+
 \subsubsection{Evaluation}
 
 Split data into a test and training set, for example 80\% train and
@@ -152,17 +172,45 @@ The harmonic mean of the precision and recall is the F1 score which
 combines the precision and recall.
 
 \begin{definition}[Precision]
-  $\text{Precision} = \frac{\text{True Positive}}{\text{True
-  Positive} + \text{False Positive}}$
+  \begin{align*}
+    \text{Precision} = \frac{\text{True Positive}}{\text{True
+    Positive} + \text{False Positive}}
+  \end{align*}
 \end{definition}
 
 \begin{definition}[Recall]
-  $\text{Recall} = \frac{\text{True Positive}}{\text{True Positive} +
-  \text{False Negative}}$
+  \begin{align*}
+    \text{Recall} = \frac{\text{True Positive}}{\text{True Positive} +
+    \text{False Negative}}
+  \end{align*}
 \end{definition}
 
 \begin{definition}[F1-score]
-  $\text{F1-score} = 2 \times \frac{\text{Precision} \times
-  \text{Recall}}{\text{Precision} + \text{Recall}}$
+  \begin{align*}
+    \text{F1-score} = 2 \times \frac{\text{Precision} \times
+    \text{Recall}}{\text{Precision} + \text{Recall}}
+  \end{align*}
 \end{definition}
+
+\subsection{Quiz}
+
+\begin{quiz}[The classification task for the 20 newsgroup text dataset is]
+  ~\\
+  Multi-class
+\end{quiz}
+
+\begin{quiz}[10.000 documents, shark occurs in 10 documents]
+  ~\\
+  idf is $log(10000 / 10) = 3$
+\end{quiz}
+
+\begin{quiz}[Document with length 100, in which the term shark occurs once]
+  ~\\
+  tf is 1 + log(1) = 1 (note that the document length is irrelevant for the tf)
+\end{quiz}
+
+\begin{quiz}[Why do we need laplace smoothing for Naive Bayes?]
+  ~\\
+  To prevent zero probabilities for classes
+\end{quiz}
 
