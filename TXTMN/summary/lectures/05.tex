@@ -1,0 +1,101 @@
+\section{Example Data}
+
+In supervised learning, we need data that is labelled to train
+our models. You can either use existing labelled data, or create
+new labelled data.
+
+\subsection{Existing Data}
+
+We can use a benchmark dataset (i.e. from Kaggle and the sorts),
+existing manually / human labelled data or labelled user-generated
+content.
+
+\subsubsection{Benchmark Data}
+
+This uses labelled datasets that are made specifically to evaluate
+and compare different methods and labels. Generally it doesn't matter
+that much if the data is older for developing new methods, as long as it
+is well-labelled and clean. Examples for text classification is the Reuters
+Corpus Volume 1, for named entity recognition CoNLL-2003 which uses labelled
+newspaper texts, for sentiment classification, IMDb movie reviews contains
+50000 movie reviews that are positive or negative.
+
+Advantages to using benchmark data is that it is high quality,
+reusable, available
+and you can compare results to other methods and approaches. However,
+they are not
+available for every specific problem and data type, and might not be
+usable for your
+task.
+
+Another source for benchmarking datasets is Huggingface, however
+there is not strong
+curation for the datasets on Huggingface.
+
+\subsubsection{Existing Labels}
+
+Sources like papers, patents and other curated libraries have texts that are
+annotated with labels by humans already. For example, patents have specific
+classifications and categories assigned to them that show that it is relevant
+to a given set of labels.
+
+Advantages are that it is high-quality data, potentially large and
+often freely available.
+However, not available for every specific problem or data type and
+might not be directly
+suitable for training classifiers.
+
+\subsubsection{Social Media (user-generated) content}
+
+Social media posts can contain tags and metadata that label its
+content. For example,
+twitter has hashtags that can be used to detect sentiment or a
+relevant topic to a
+post. Another example is customer reviews to learn sentiment and
+opinion, as the rating
+generally aligns with the sentiment of the text.
+
+Advantages are that it is available in many languages and
+human-created. However, it can
+be inconsistent, might be low quality and is an indirect signal (it
+  was not intended as
+a specific label).
+
+\subsection{Create labelled data}
+
+Sometimes, we don't have pre-existing labelled datasets that we
+can use for training. In this case, we first take a sample of
+the items (or documents) that we want to label. Second, we define
+a set of categories that we want to label the data with. Third, we write
+annotation guidelines to label the items with the categories. Finally,
+test with annotators whether the instructions are clear and refine the
+guidelines until they are. Ensure that the guidelines are clearly defined
+but not too trivial.
+
+With the instructions, you can use crowdsourcing (mTurk, Crowdflower) or
+domain experts to annotate the texts. Compare the labels by different 
+annotators on the same text to estimate the reliability of the data 
+(inter-rater agreement).
+
+Ensure that you have at at least dozens/hundreds per category, the more the better
+and the more difficult the problem, the more examples you need. If you use crowdsourcing,
+ensure that you have a check in the task, i.e. dummy questions, or say the work is compared
+to expert annotations.
+
+\subsubsection{Quality Control}
+
+Ensure that the same text is labelled by multiple persons, such that you can measure
+the agreement over labels between different annotators. This gives the reliability of
+the annotated data and can also be used as a measure for the difficulty of the task.
+A measure to use for that is Cohen's Kappa:
+
+\begin{definition}[Cohen's Kappa]
+  \begin{align*}
+    \Kappa = \frac{p(a) - p(e)}{1 - p(e)}
+  \end{align*}
+
+  Where $p(a)$ is the agreed percentage, and $pr(e)$ the expected agreement
+  based on the occurrence of each of the values.
+\end{definition}
+
+
