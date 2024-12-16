@@ -7,21 +7,21 @@ classification (nil/a/a,b/...).
 
 \subsection{Task Definition}
 
-\paragraph{Text Unit}
+\subsubsection{Text Unit}
 
 First define the text unit, i.e. the size and boundary
 of the document. For example, complete documents (articles,
 emails), sections (minutes, speeches) or sentences (language
 identification, sentiment classification).
 
-\paragraph{Categories}
+\subsubsection{Categories}
 
 What is the category that we want to extract from the documents,
 i.e. spam/no spam, relevant/irrelevant, language, sentiment, stance,
 topic/subtopic (i.e. which type of cancer), warning (i.e. detect hate
 speech).
 
-\paragraph{Pre-processing}
+\subsubsection{Pre-processing}
 
 We want to have features for documents, for example a vector
 from each document with the same dimensionality. Using the bag
@@ -30,4 +30,139 @@ sparse, the advantage is that it is very transparent and you can
 show from the weights why a classifier learned a specific model.
 Alternatively, you can use embeddings which is less interpretable.
 
+Using words as features on the vectors $x_i$ and the class label
+as $y_i$. Before we use the words as features we tokenize them, and
+generally we also lowercase and remove punctuation. BERT models
+come cased which keeps capitalization and diacritical marks, and uncased
+which removes these.
+Further steps include, but are not limited to, removing stopwords,
+lemmatizing or stemming, or adding phrases (i.e. not good)
+as a single feature.
+
+\subsubsection{Feature Selection}
+
+Limiting the amount of features reduces the dimensionality and
+avoids overfitting to the training data. Furthermore, due to the
+long tail of the word distribution, we only want to use words that
+appear in multiple documents.
+
+Globally, we can fix the vocabulary size and keep only the top-n most
+frequent terms. Rare terms can also be avoided by using a cut-off on
+the term frequency. For example in the CountVectorizer you can set parameters
+to have only terms that occur in a ratio of max\_df documents and at least
+min\_df times.
+
+\subsubsection{Term Weighting}
+
+We can add the feature weights to the document-term matrix in binary
+(occurs or not),
+integer (term count) or a real value (more advanced). Real values can
+often contain
+more information than just the counts, a popular weighting scheme is
+Tf-Idf. In this case
+there are two components: the term frequency (tf) and inverse
+document frequency (idf).
+
+In Tf-Idf the term frequency (tf) counts how often the term occurs in
+the document.
+Instead of using the raw value, we use a 1 + log value such that the
+term counts are
+normalized closer to eachother. Meaning, 1 becomes 1, 10 becomes 2
+and 100 becomes 3.
+
+The inverse document frequency (idf) uses the intuition that the most
+frequent terms
+are not very informative. It gives the number of documents that the
+term occurs in and
+takes the log of the inverse of that.
+
+\begin{definition}[Tf-Idf]
+  $tf = 1 + log(\text{term}_\text{count})$, $idf =
+  log(\frac{|\text{docs}|}{df_\text{term}})$, $tf \times idf$.
+\end{definition}
+
+\subsubsection{Classifier Learning}
+
+If we use word features, we need an estimator that is well-suited for
+high-dimensional and sparse data. Such as Naive Bayes, Support Vector Machines
+or Random Forests. If we have embeddings, we can use transfer learning,
+see lecture 6. Alternatively, we can use in-context learning with a
+generative LLM.
+
+\paragraph{Naive Bayes}
+
+One of the older models is Naive Bayes which has been used for SPAM
+classification
+in emails for a long time. It uses the prior probability of each category in the
+training data and use the posterior probability distribution over the
+possible categories.
+
+In essence, we take a document and calculate for all classes the
+probability of that document
+and that class, times the probability of the class in general,
+divided by the probability of
+the document. But, considering that the document probability is a
+constant given, we can eliminate
+that term and only compute the probability of the document and the
+class, times the probability of
+the class, and take the class where this is the highest.
+
+We can calculate the probability of the document and the class by
+taking the probability of each
+term given the class. When we have each term's probability we can
+multiply the probabilities and
+get a single probability. This is also what makes this naive, as it
+assumes that the terms are
+independent.
+However, this will fail, as we (almost) always have terms in the
+document with the probability zero,
+multiplying the entire probability to zero. This can be solved by
+adding a smoothing function to the
+terms. For example, laplace smoothing (add-one smoothing) assumes
+that each term occurs one additional
+time.
+
+This approach does the two assumptions that the terms are independent
+of eachother and assigns the same
+probabilities to terms regardless of their position in the document.
+This results in a correct estimation, but inaccurate probabilities,
+as only the ordering
+can be used to estimate the correct class.
+
+\subsubsection{Evaluation}
+
+Split data into a test and training set, for example 80\% train and
+20\% test. Don't train on the
+test set to prevent overfitting on your dataset. For hyperparameter
+tuning, use a validation set that
+is part of your train set, generally using cross validation.
+
+Accuracy is often not suitable as the classes are often unbalanced.
+High accuracy in one class might mean
+a low accuracy in the other. It depends on the task what we are
+interesting in, for example you want a spam
+filter to mark important emails as not spam more than that you want
+to mark spam emails as spam.
+
+Generally, precision and recall are used and evaluated on all
+classes. Where precision measures how many of
+the assigned labels are correct, and recall is how many of the true
+labels were assigned.
+The harmonic mean of the precision and recall is the F1 score which
+combines the precision and recall.
+
+\begin{definition}[Precision]
+  $\text{Precision} = \frac{\text{True Positive}}{\text{True
+  Positive} + \text{False Positive}}$
+\end{definition}
+
+\begin{definition}[Recall]
+  $\text{Recall} = \frac{\text{True Positive}}{\text{True Positive} +
+  \text{False Negative}}$
+\end{definition}
+
+\begin{definition}[F1-score]
+  $\text{F1-score} = 2 \times \frac{\text{Precision} \times
+  \text{Recall}}{\text{Precision} + \text{Recall}}$
+\end{definition}
 
