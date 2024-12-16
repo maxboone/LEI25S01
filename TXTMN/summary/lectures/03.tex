@@ -39,6 +39,63 @@ not from lemmas. The words are mapped to syntactically and semantically
 similar words in a continuous dense vector space using the
 distributional hypothesis.
 
+These embeddings are generated through feed-forward neural
+networks with the vector dimension as the number of output
+nodes and the probabilities in the output are normalized using
+the softmax function (which will exaggerate the differences
+and give a clear choice from the vector).
 
+\subsubsection{Word2Vec}
 
+Word2Vec is an early efficient predictive model to learn the weights
+for word embeddings. However superseded by BERT, it is still
+used regularly as it is very efficient. It has a single hidden layer,
+so it is not a deep neural network, and searches for the probability
+of words are likely to show up near another word.
+
+After training, the hidden layer then has the weights of each word
+respective (completely connected) to the other words. We start with
+the document, extract a vocabulary and try to represent it as a lower
+dimensional vector.
+
+This is a supervised task, but we did not label the data ourselves meaning
+it is a self-supervised task (or approach).
+Word2Vec does this by applying skip-gram with negative sampling, which
+means that it:
+
+\begin{enumerate}
+  \item Take a target word, and a neighbouring context window as
+    positive examples
+  \item Randomly sample other words as negative samples
+  \item Train a classifier (with one hidden layer) to distinguish
+    these two cases
+  \item The learned weights of the hidden layer are the embeddings
+  \item Update previous embeddings of the word if necessary
+\end{enumerate}
+
+It scales well, learned embeddings can be re-used, and training can be done
+incrementally. However, embeddings are static, meaning the same word always
+has the same "meaning". Embeddings can be used as input for classifiers but
+can't be updated while training the classifier.
+
+\subsection{Document Embeddings}
+
+It might also be useful to generate embeddings for documents, as to create
+vectors from documents. For example, you could take the geometric average of
+all words in the document, but many documents will end up close to the center
+in this case.
+
+An alternative is to use \texttt{doc2vec} where it generates a
+separate embedding
+for each paragraph in the document takes the words that it co-occurs
+with as a positive
+and words that it doesn't as negative. This can then be used as an
+input to a classifier.
+
+\subsection{Quiz}
+\begin{quiz}[What is the role of the distributional hypothesis in
+  training word embeddings?]
+  ~\\
+  Words that occur in similar contexts get similar representations
+\end{quiz}
 
