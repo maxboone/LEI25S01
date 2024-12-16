@@ -1,0 +1,44 @@
+\section{Vector Semantics}
+
+\subsection{Vector Space Model}
+
+In the bag of words approach, we can represent
+documents and queries are in a vector space with
+the words as dimensions. Each document can be
+represented by a vector in this space.
+
+The problem here is that the documents result in
+very sparse vectors with a very high dimensionality.
+
+The alternative is to not present documents as words
+but rather by: topics or word embeddings. Topics are
+discussed in lecture 9.
+
+\subsection{Word Embeddings}
+
+The basic idea behind representing words as
+embeddings is that:
+
+\begin{definition}[Distributional Hypothesis]
+  The context of a word defines its meaning.
+\end{definition}
+
+For example, if we have \textit{a bottle of foobar},
+\textit{a glass of foobar} and \textit{foobar gets you really drunk},
+then it is likely that foobar is an alcoholic
+beverage. Meaning, that a word can be assigned
+a value by the words that surround it, and words
+with similar values are likely similar words.
+
+The idea is to create a dense vector space where we
+place words that are similar close to eachother. The
+dimensionality is between 100 to 400 here, which is
+low dimension in NLP terms but rather high in other
+disciplines. The similarity between the words is learned,
+not from lemmas. The words are mapped to syntactically and semantically
+similar words in a continuous dense vector space using the
+distributional hypothesis.
+
+
+
+

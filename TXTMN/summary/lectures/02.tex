@@ -1,0 +1,174 @@
+\section{Preprocessing}
+
+All text needs a clean-up of some kind, either the documents might
+have encoding errors, the text
+might be scanned (through OCR) or recognized (from speech). Digital
+input is also not always clean,
+as it might contain things like layout, disclaimers, headers, tables,
+or markup. We want to get rid
+of this data before we use it in models, but it might contain useful
+information (i.e. in XML or JSON)
+that we can use.
+
+\subsection{Encoding}
+
+Text is encoded for storage, where characters are stored as numbers.
+Classically this used ASCII but it
+only encodes simple alphanumeric characters that are used in American
+English. A universal and independent
+standard for encoding is Unicode, and rendering of the characters is
+implemented by the software. A popular
+implementation of Unicode (UTF-8).
+
+\subsection{Cleaning}
+
+When we do a text mining task we generally have to start with the
+creation of a dataset for our task.
+This means that we likely have to digitize, convert and clean textual
+content to run our mining task on
+and can take the majority of the work of the task.
+
+\subsubsection{Regular Expressions}
+
+One way to get relevant content from textual data is to use regular
+expressions, these are expressions
+that can be used to search text. For example, a Dutch postal code is
+\texttt{/[1-9][0-9]{3} [A-Z]{2}/}.
+These expressions can be used to either extract information from
+texts, or to remove terms or private
+data from texts.
+
+However, these might get too complex as the expressions can also start
+hitting (parts) of words, you might need to account for capitalization
+or different ways of writing a term.
+
+\subsubsection{Spacy}
+
+An alternative for Regular Expressions is to use Spacy, which converts words
+in the text to tokens and then you can simply match on tokens (see
+next section).
+
+\subsection{Tokenization}
+
+Text can be converted to tokens for comparison with oneanother, as you might
+have different ways of writing the same word. For example,
+\texttt{isn't it?} can
+be written as \texttt{is not it?} and contains four tokens (three
+words, one punctuation).
+
+\begin{definition}[Token]
+  An instance of a word or punctuation occurring in a document
+\end{definition}
+
+\begin{definition}[Word Type]
+  A distinct word in the collection (without duplicates)
+\end{definition}
+
+\begin{definition}[Term]
+  A token when used as a feature (or index), generally in normalized form.
+\end{definition}
+
+\begin{definition}[Token count]
+  Number of words in a collection/document, includes duplicates.
+\end{definition}
+
+\begin{definition}[Vocabulary size]
+  Number of unique terms (word types); the feature size or dimension
+  size for bag-of-words.
+\end{definition}
+
+The choice of the terms (i.e. whether to use or not to use punctuation) depends
+on the task that you are trying to complete. For example, in
+forensics, you might
+want to specifically look at the use of punctuation.
+
+\subsubsection{Sentence Splitting}
+
+Besides splitting on tokens, we might need to split text into
+sentences. For example,
+when we look at relations between multiple entities in the same
+sentence. Or, if we want
+to look at the sentiment of each sentence (such as in reviews). This
+can be difficult due
+to markup being used (bullet points), abbreviations, different uses
+of punctuation or line
+breaks in the document.
+
+\subsubsection{Sub-word Tokenization}
+
+Each new document will add new terms, that might relate to words that
+we used earlier. For
+example, the words model, models and modeling all have the same
+"model" root. If we split these
+words into subwords we can match on \textit{parts} of the words that
+we have seen before.
+One of the sub-word tokenizers is byte-pair encoding, which works as follows:
+
+\begin{definition}[Byte-pair encoding (BPE)]
+  Create a vocabulary of all characters. Merge the most occurring
+  adjacent characters to form a new token
+  and apply the new token. Repeat and create new subwords this way
+  until we have $k$ novel tokens.
+\end{definition}
+
+\subsubsection{Lemmatization and Stemming}
+
+We might want to normalize words that are written down differently to
+the same term. For example, think, thinking and thought all have the same
+meaning in a different tense. In this case you can take the \textbf{Lemma}
+or the \textbf{Stem}.
+
+\begin{definition}[Lemma]
+  The dictionary form of a word, i.e. the infinitive for a verb
+  (thought $\rightarrow$ think) and the singular for a noun (mice
+  $\rightarrow$ mouse).
+\end{definition}
+
+\begin{definition}[Stem]
+  The prefix of a word, i.e. computer, computing, computers, compute
+  all share \texttt{comput}.
+\end{definition}
+
+We mostly prefer lemmas over stems, as they can merge more different
+presentations
+of the text to the same terms.
+
+\subsection{Edit Distance}
+
+For spelling correction and normalization we can look at the
+"closest" correct word
+to the word that was written. The metric that we can use to calculate
+this is by Levenshtein distance, where insertion, deletion and substitution
+all have a cost of 1. The match with the lowest cost in that case has
+the lowest edit distance.
+You can extend this cost function by for example lowering the costs of
+characters that are next to eachother on a keyboard or are phonetically
+similar.
+
+\subsection{Quiz}
+
+\begin{quiz}[What is optical character recognition (OCR)?]
+  ~\\
+  A technique for converting the image of a printed text to digital text.
+\end{quiz}
+
+\begin{quiz}[What is the main limitation of ASCII?]
+  ~\\
+  It can only encode letters that occur in the American English alphabet.
+\end{quiz}
+
+\begin{quiz}[What does the RegEx match?]
+  ~\\
+  Regular Expression: \verb|/<[^>]+>/| \\
+  Any HTML/XML tag.
+\end{quiz}
+
+\begin{quiz}[Can you make a language-independent lemmatizer?]
+  ~\\
+  No, because a lemmatizer uses a dictionary.
+\end{quiz}
+
+\begin{quiz}[What is the levenshtein distance between shrimp and shrop?]
+  ~\\
+  2
+\end{quiz}

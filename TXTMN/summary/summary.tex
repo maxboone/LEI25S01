@@ -25,6 +25,20 @@
   after skip=\topsep,
 }
 
+\theoremstyle{quiz}
+\newtheorem{quiz}{Quiz}[section]
+\tcolorboxenvironment{quiz}{
+  colback=green!5!white,
+  boxrule=0pt,
+  boxsep=1pt,
+  left=2pt,right=2pt,top=2pt,bottom=2pt,
+  oversize=2pt,
+  sharp corners,
+  before skip=\topsep,
+  after skip=\topsep,
+}
+
+
 \usepackage[T1]{fontenc}
 
 \title{Text Mining - Summary}
@@ -33,4 +47,6 @@
 
 \begin{document}
 \input{lectures/01.tex}
+\input{lectures/02.tex}
+\input{lectures/03.tex}
 \end{document}
