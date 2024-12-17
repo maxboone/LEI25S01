@@ -20,6 +20,7 @@ smaller models is called emergent abilities. These can not be predicted
 simply by extrapolating the performance of smaller models.
 
 \begin{definition}[Emergent Abilities]
+  ~\\
   Abilities that a model gets by scaling it up, that was not present
   in smaller models.
 \end{definition}
@@ -215,16 +216,47 @@ by experts.
 
 LLMs also contain biases from the learned text, this can be a problem
 when these models are used to provide assesments or suggestions to humans. For
-example in the checking of resumes, the models will have a bias in selected candidates.
+example in the checking of resumes, the models will have a bias in
+selected candidates.
 
 Using web content results in problems due to the uncertainty of copyright
-on scraped pages. The owner of a website might not want their content to be used in
-training. And personal information is available on the web and should not be returned
+on scraped pages. The owner of a website might not want their content
+to be used in
+training. And personal information is available on the web and should
+not be returned
 by LLMs.
 
-Finally, there are ethical concerns with the training and usage of these models as
-they consume a large amount of energy in training and require high-end GPUs. A single
-run in ChatGPT costs 1000x more energy than one search in Google. When crowdsourcing
-for RLHF and filtering tasks, cheap labour is generally used to prevent harmful and
+Finally, there are ethical concerns with the training and usage of
+these models as
+they consume a large amount of energy in training and require
+high-end GPUs. A single
+run in ChatGPT costs 1000x more energy than one search in Google.
+When crowdsourcing
+for RLHF and filtering tasks, cheap labour is generally used to
+prevent harmful and
 toxic content generation.
 
+\subsection{Quiz}
+
+\begin{quiz}[Why does greedy decoding not always lead to the best output?]
+  ~\\
+  Because the local choices are not necessarily the global optimum.
+\end{quiz}
+
+\begin{quiz}[What is the difference between fine-tuning and
+  in-context learning?]
+  ~\\
+  Fine-tuning uses more training data
+  In-context learning uses instructions, fine-tuning does not
+  With fine-tuning the model is updated, with in-context learning it is not
+\end{quiz}
+
+\begin{quiz}[What are emergent abilities of LLMs]
+  ~\\
+  Abilities that are not present in smaller models but only in larger models
+\end{quiz}
+
+\begin{quiz}[Can we use LLMs for annotation]
+  ~\\
+  It depends on the task
+\end{quiz}

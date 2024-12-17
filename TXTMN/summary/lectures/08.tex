@@ -1,0 +1,208 @@
+\section{Information Extraction}
+
+A task that is central to text mining is to discover structured
+information from unstructured or semi-structured text. Example
+applications are to identify mentions of medications or side effects
+in electronic health records, finding person names in bank transactions
+for anonimisation, finding company names, dates and stock market information
+in economic newspaper texts or finding scientific references in patents
+to identify relations between science and industry.
+
+Main methods that do this in texts are named entity recognition (NER)
+or relation extraction.
+
+\subsection{Named Entity Recognition (NER)}
+
+A named entity is a sequence of words that designates some real-world
+entity (typically a name):
+\begin{itemize}
+  \item General types: persons, organizations, locations
+  \item Extended types: dates, times, monetary values and percentages
+  \item Domain-specific types: biomedical entities, archaeological entities
+\end{itemize}
+
+NER is a machine learning task based on sequence labelling. Word order matters,
+one entity can span multiple words and there are multiple ways to refer to the
+same concept. The same string can also have multiple meanings.
+
+Challenges for NER are ambiguity of segmentation, where does an entity
+start and end. The type of a term can be ambiguous, for example something
+can be a name or a location (e.g. Washington). Finally, the same term might
+shift in meaning over time (in text after 2001, the string 9/11 refers to
+an event).
+
+For many domains, lists of entities exist. For example, locations, people
+and events generally have a Wikipedia entry, medical entites can be found
+in medical language systems, chemical entities in catalogs, et cetera.
+
+We could use such lists of names to automatically identify them in a text,
+however limitations are that entities are typically multi-word phrases with
+varying spelling, whitespacing and punctuation. New entities are not in the
+list. We would need to add all variants referring to the same entity. Resources
+such as medical language systems are very large and we are not interested in
+all entity types.
+
+\subsubsection{Sequence Labelling}
+
+NER is a sequence labelling task, we want to have one label per token and
+the sequence is generally a sentence. The assigned tags to tokens capture
+both the boundary and the type of entities.
+The format of training data is generally as IOB-tags. Each word gets a label
+with the B-tag as the beginning, I-tag as inside and the O-tag for
+tokens outside
+of any entity.
+
+We can label entities based on their context, even if we are unfamiliar with
+a specific medication, we can probably label something as medication because
+we are aware of the context of the text and the words surrounding the name of
+the medication.
+
+A sequence labeler (HMM, CRF, RNN, Transformer, etc.) is trained to label
+each token in the text with these tags. Meaning, $y_i$ contains the IOB-label
+of the token represented as $x_i$. The model then uses the context of $x_i$ to
+predict $\hat{y}_i$.
+
+\subsubsection{Hidden Markov Model (HMM)}
+
+HMM is a probablistic sequence model. Given a sequence of words it
+computes a probability distribution over possible sequences of labels
+and chooses the best label sequence.
+
+\subsubsection{Conditional Random Fields (CRF)}
+
+CRF is a discrimative undirected probablistic model. It can take rich
+representations
+of observations (feature vectors) and take previous labels and
+context observations into
+account. It optimizes the sequence as a whole, the probability of the
+best sequence is
+computed by the Viterbi algorithm.
+
+This is particularly relevant because we are labelling the beginning
+of a named entity (B-tag) and thus subsequent I-tags are dependent on
+the B-tag, and we can not have I-tags directly after O-tags.
+
+\subsubsection{Feature-based NER}
+
+The idea of feature-base NER is that we do supervised learning through
+representing each word by a feature vector that contains information about
+the word and its context. Given $x_i$ we can create a feature vector for it
+based on IOB-labeled texts.
+
+Commonly used features for sequence labelling NER are:
+\begin{itemize}
+  \item Identity of $w_i$, identity of neighbouring words
+  \item Embeddings for $w_i$, embeddings for neighbouring words
+  \item Part of speech of $w_i$, part of speech of neighbouring words
+  \item Presence of $w_i$ in a gazetteer
+  \item $w_i$ contains a particular prefix (from all prefixes of
+    length $\leq 4$)
+  \item $w_i$ contains a particular suffix (from all suffixes of
+    length $\leq 4$)
+  \item Word shape of $w_i$, word shape of neighbouring words
+  \item Short word shape of $w_i$, short word shape of neighbouring words
+  \item Gazetteer features
+\end{itemize}
+
+\begin{definition}[gazetteer]
+  A gazetteer is a precompiled list of names, such as locations,
+  organizations, or other entities, often used to assist named entity
+  recognition (NER) by providing prior knowledge about specific terms
+  that might appear in the text.
+\end{definition}
+
+\begin{definition}[word shape]
+  The word shape of a word is a representation that captures its
+  pattern of uppercase letters, lowercase letters, digits, and
+  punctuation. For example, the word ``Google123'' has the word shape
+  ``Xxxxxddd''.
+\end{definition}
+
+\begin{definition}[short word shape]
+  The short word shape of a word is a compressed version of the word
+  shape where consecutive character classes (e.g., uppercase,
+  lowercase, digits) are collapsed into a single symbol. For example,
+  the word ``Google123'' has the short word shape ``Xd''.
+\end{definition}
+
+\begin{definition}[part of speech]
+  Part of speech (POS) refers to the grammatical category of a word
+  based on its syntactic function in a sentence, such as noun, verb,
+  adjective, adverb, etc. POS tagging involves assigning each word in
+  a text its corresponding part of speech.
+\end{definition}
+
+\subsubsection{Bi-LSTMs for Sequence Labelling}
+
+Similar to the LTSM, but with context running from left-to-right and
+right-to-left. Word and character embeddings are computed for input words $w_i$
+and the context words. The outputs are concatenated to produce a
+single output layer
+at position $i$.
+
+The simplest approach would be to directly pass to a softmax layer to
+choose the tag,
+however, we need strong constraints for neighbouring tokens (c.q. I
+should follow B or I, not O).
+We can use a CRF-layer on top of the bi-LSTM to get a biLSTM-CRF model.
+
+\subsubsection{BERT for Sequence Labelling}
+
+Take a pre-trained BERT model, fine-tune it with labelled data (for NER: IOB)
+and use transfer learning to put a supervised layer on top of the transformer
+network and the network as a whole is optimized. In this case, we should use a
+cased version of the BERT model as for this task case and punctuation matters.
+
+\subsubsection{Normalization}
+
+Suppose that we have a method to extract the named entities from a
+text. Multiple
+extracted mentions can refer to the same concept. In order to
+normalize these, we
+need a list of concepts (i.e. a knowledgebase or ontology).
+
+For example, if we have the entity of a specific type of medicine
+such as Allegra, we want to label it identically to it's generic counterpart
+Fexofenadine. This is generally not a hard task to do, as these are single words
+that have to match. However, measuring side effects is more difficult as people
+can use differing descriptions instead of the medically correct term.
+
+We can use a separate BERT-model to classify the descriptions of side-effects
+into their respective categories, and use an existing ontology with side-effect
+descriptions to train with. The problem is that the label space for
+side-effects is
+very large and we don't have training data for all items. We can
+instead define this
+as a text-similarity task and use self-alignment pretraining to do
+synonym detection.
+
+\subsubsection{Relation Extraction}
+
+If we want to extract relations from texts between named entities we
+can apply three
+distinct methods. Co-occurrence based relations, supervised learning
+or distant supervision.
+In co-occurrence, we look for words that often co-occur to extract
+relations and we can create
+a network structure based on this.
+
+With supervised learning we label training data with relations. We
+assume that the relation is verbalized in one sentence or one passage.
+We find pairs of named entities and apply a relation classification
+on each pair, the
+classifier can then use any supervised technique to model these relations.
+
+Finally, distant supervision can be applied when we do have a
+knowledge base but we
+don't have labelled data. We start with a large, manually created
+knowledge base such
+as IMDb. Find occurrences of pairs of related entities from the
+database in sentences.
+The assumption is that if two entities participate in a relation, any
+sentence that contains
+these entities expresses that relation. We can then train a relation
+extraction classifier on
+the found entitites and their context. Then, we can apply the
+classifier to sentences with
+unconnected other entities to find new relations.
+
