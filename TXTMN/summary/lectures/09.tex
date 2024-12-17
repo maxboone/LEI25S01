@@ -50,31 +50,58 @@ innovation are drivers for applying text mining in healthcare.
 
 The idea behind autoscriber is to automate (part of) the tasks related
 to medical annotation and documentation tasks from patient consultations.
-It works by recording clinical conversations, generating a transcript from 
-the conversation and feeding this text data into NLP tasks for entity recognition,
+It works by recording clinical conversations, generating a transcript from
+the conversation and feeding this text data into NLP tasks for entity
+recognition,
 classification and summarization.
 
 \subsubsection{Summarization}
 
 As this research was done in 2021, the idea was to start with the automatic
-transcript, preprocess it to remove stop words among others, and use tf-idf 
+transcript, preprocess it to remove stop words among others, and use tf-idf
 to extract keywords. These keywords are then filtered to extract relevant
-keywords. Next, neural networks were applied (CNN-LSTM), and needed a lot 
+keywords. Next, neural networks were applied (CNN-LSTM), and needed a lot
 more annotation.
 
 One of the challenges is that the datasets are incomplete, they are collected
 for a specific reason by a specific doctor, making it subjective and biased
 data. Especially as the conversation is guided by the doctor, the contents will
-change based on the suspicions and ideas from the doctor. For example, a cardiologist
+change based on the suspicions and ideas from the doctor. For
+example, a cardiologist
 will ask very different questions than a psychiatrist.
-Another challenge was the correctness of the data, typos, abbreviations (that are ambiguous)
+Another challenge was the correctness of the data, typos,
+abbreviations (that are ambiguous)
 and missing metadata.
 
 Finally, for summarization LLMs were employed as it is particularly necessary to
-use fluent language. Extractive summarization will only contain parts of the conversation
-and as there are multiple persons speaking this might give difficult to understand sentences
-and results. Advantages are that no annotated data is necessary, and only examples are sufficient.
-Moreover, low quality data is not a large issue here. However, it is difficult to evaluate the
+use fluent language. Extractive summarization will only contain parts
+of the conversation
+and as there are multiple persons speaking this might give difficult
+to understand sentences
+and results. Advantages are that no annotated data is necessary, and
+only examples are sufficient.
+Moreover, low quality data is not a large issue here. However, it is
+difficult to evaluate the
 outcomes of the LLMs and there is a risk of hallucinations.
 
+\subsection{Quiz}
+
+\begin{quiz}[Why is speech input challenging for text mining in the
+  clinical setting?]
+  ~\\
+  Automatic speech recognition output contains error, it leads to
+  ill-formattted text and it is difficult to distinguish between the
+  two speakers.
+\end{quiz}
+
+\begin{quiz}[Why is IDF useful in the extraction of relevant keywords?]
+  ~\\
+  Because keywords that occur in fewer conversations are more relevant.
+\end{quiz}
+
+\begin{quiz}[What are the challenges of clinical text?]
+  ~\\
+  The texts are not objective, are doctor (author)-specific, contain
+  abbreviations and typos and there is often information missing.
+\end{quiz}
 
