@@ -11,13 +11,33 @@ modelling was GPT-3. If we use a pre-trained or previously fine-tuned
 model without
 fine-tuning, that is called zero-shot use.
 
+In few-shot learning, we can give a few (3-5) examples and fine-tune the
+model with those examples. In LLMs, these examples are given in the prompt
+and the actual model is not changed.
+
 The idea that the models get new capabilities that are not present in
 smaller models is called emergent abilities. These can not be predicted
 simply by extrapolating the performance of smaller models.
 
-In few-shot learning, we can give a few (3-5) examples and fine-tune the
-model with those examples. In LLMs, these examples are given in the prompt
-and the actual model is not changed.
+\begin{definition}[Emergent Abilities]
+  Abilities that a model gets by scaling it up, that was not present
+  in smaller models.
+\end{definition}
+
+Due to these abilities, we can actually ``fine-tune'' large models in-context
+by providing instructions and adding examples in the prompt given to the model.
+This does not change the model itself, but rather the model learns to
+do something
+inside the context of the given prompt. This requires fewer examples,
+the model is not
+updated and what is learnt is of temporary nature.
+
+Generally, if you have the labelled data, fine-tuning a (BERT) model
+is the better
+option. You could also use an LLM to label data to use in fine-tuning
+a BERT model.
+
+\subsection{Output sampling}
 
 In GPT models, we sample a word in the output from the transformer's
 softmax distribution
@@ -180,3 +200,31 @@ with conversational
 data on the web (i.e. from Reddit). Then, RLHF was used to fine-tune
 the model to give
 appropriate and desired responses.
+
+\subsection{Potential Harms}
+
+Due to the probablistic nature of generative language models, hallucinations
+occur. The content that is generated is plausible and fluent, but does not have
+to be necessarily correct.
+
+GPT-3.5 contains unfaithful information in 25\% of the summaries. Both ChatGPT
+and GPT-4 are very poor at yes/no question answering (with less than
+50\% accuracy).
+Only 20\% of the responses in healthcare of ChatGPT and GPT-3.5 were agreed with
+by experts.
+
+LLMs also contain biases from the learned text, this can be a problem
+when these models are used to provide assesments or suggestions to humans. For
+example in the checking of resumes, the models will have a bias in selected candidates.
+
+Using web content results in problems due to the uncertainty of copyright
+on scraped pages. The owner of a website might not want their content to be used in
+training. And personal information is available on the web and should not be returned
+by LLMs.
+
+Finally, there are ethical concerns with the training and usage of these models as
+they consume a large amount of energy in training and require high-end GPUs. A single
+run in ChatGPT costs 1000x more energy than one search in Google. When crowdsourcing
+for RLHF and filtering tasks, cheap labour is generally used to prevent harmful and
+toxic content generation.
+
