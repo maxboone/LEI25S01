@@ -1,0 +1,245 @@
+\section{Neural Models for Sequential Data}
+
+When we talk about predicting the next word in a sequence,
+in a classical sense we generally look at n-gram language models.
+Here, given a sequence of tokens, we estimate the probability
+distribution over the vocabulary for the next token.
+
+In neural networks, we can use the word embeddings of the previous
+words to predict the next word. This works better to generalize ``unseen''
+data. For example, in the sentence ``I have to make sure that the cat
+gets fed.'',
+we want to predict: ``I forgot to make sure that the dog gets ...''.
+
+When we would use n-grams, we never saw ``gets fed'' after the word dog,
+but we have seen the word cat which is semantically and syntactically similar
+to cat and likely has a near embedding.
+
+\subsection{Sequential Text}
+
+Language is sequential data, and feed-forward neural networks do not
+model such temporal aspects and models the words independently from eachother.
+Extension of the feed-forward neural network for modelling sequential data is
+a recurrent neural network (RNN). This adds the weights calculated in the hidden
+layer in the previous time stamp. This ensures that the past context is used in
+calculating the output for the current input.
+
+An example where we want to use these temporal neural networks is
+part-of-speech (POS)
+tagging, which labels (sequence labelling) words with their type
+(noun, verb). For example, the word fish
+is a noun in \textit{the fish swims} but a verb in \textit{we like to fish}.
+
+A problem with using RNNs is that they only carry one time step
+forward in the weights.
+Although all previous steps are incorporated in the product of the
+previous weights, the relationship
+between words more distante is not modeled.
+
+\subsubsection{Long Short-Term Memory (LSTM)}
+
+A solution to this problem is a more complex RNN that takes a longer
+context into account.
+They have a separate vector retaining the context information that is
+relevant for a longer
+part of the sequence. This is updated in each step and carries
+temporally relevant data.
+
+A problem with this is that they are slow to train, as their
+computation can not be parallelized.
+Furthermore, even though they have a longer context, they can not
+model relations that span multiple
+sentences or paragraphs.
+
+\subsection{Transformer Models}
+
+A solution to these memory problems and word embeddings are transformer models.
+This is basically a successor to the RNN that was generally used for
+the encoding
+and decoding of sequences but does not work with contexts well.
+
+A transformer is a neural network with an added mechanism of ``self-attention''.
+The intuition is that while embeddings of words are learned, attention is paid
+to surrounding tokens and this information is integrated. In every
+representation
+that you get, it has some information about the surrounding tokens,
+and compares the
+relations of the token to all other tokens in the set (in parallel).
+
+This makes transformer models faster than BiLSTMs and other RNNs to train.
+It can run in parallel because the tokens and its relations can be modeled
+independently.
+
+The transformer model has an encoder-decoder architecture. In this context this
+means that it consists of an input encoder, transformer blocks and a language
+modeling head.
+
+\subsubsection{Input Encoding}
+
+The input encoder processes input tokens into a vector representation
+for each token,
+and includes with that the position of the input token in the
+sequence. The output of
+this encoder is information on what the word syntactically and
+semantically means and
+where it exists in the context.
+
+\subsubsection{Transformer blocks}
+
+Then, these input embeddings are fed into a multilayer network that
+also includes all
+previous embeddings in the sequence. It results in a set of vectors
+$H_i$ that are embeddings
+that include the learned context of the word. These output vectors
+can be used as the basis for
+other learning tasks or for generating token sequences.
+
+Each input embedding is compared to all other input embeddings using
+the dot product to calculate
+a score. The larger the value, the more similar it is to the vectors
+that are being compared. This
+is computationally heavy and therefore the input for transformers is
+maximized to a given number.
+
+In summary, each input embedding plays three distinct roles in the
+self-attention mechanism:
+
+\begin{itemize}
+  \item \textbf{The query:} Represents the current input and is used
+    to compare against all other inputs to evaluate their relevance.
+  \item \textbf{The key:} Represents the role or importance of each
+    previous input in relation to the current input.
+  \item \textbf{The value:} Provides the actual contextual
+    information, weighted by the similarity score computed between
+    the query and the key.
+\end{itemize}
+
+In essence, the query and key determine how much attention each input
+should pay to others, while the value carries the actual content
+being passed along. Each token in the input sequence is compared to
+all other tokens, and these comparisons, represented as a weighted
+sum, capture the contextual importance of other tokens relative to
+the current token.
+
+In summary, each input embedding plays three roles in the
+self-attention mechanism:
+
+\subsubsection{Language modeling head}
+
+Finally, the trained / learned embeddings are passed through a final
+transformer block and through
+softmax over the vocabulary to generate a single (predicted) token.
+
+\subsection{Applying transformer models}
+
+Given a training corpus of text, we can train the transformer model
+to predict the next token in a sequence. The goal here is to learn the
+representations of meaning for words.
+
+Then, using autoregressive generation, we incrementally generate words
+by repeatedly sampling the next word based on the previous words. Finally,
+teacher forcing forces the system to use the target tokens from training
+as the next input $x_{t+1}$ instead of the decoder output $y_t$.
+
+\subsection{BERT}
+
+Using the transformer model as a base, we use pre-training to model a
+language. But, instead of going only from left-to-right, we use both sides
+as context when predicting words. Finally, instead of using decoding to
+generate the text, we stick to only encoding and use only the output embeddings.
+We can then use the output embeddings to do supervised learning.
+
+This allows us to do masked language modelling. In this case, we randomly mask
+words during training and try to predict what these words should be. A special
+token is used as a boundary to separate sentences and allows to learn
+the relation
+between full sentences.
+
+\subsubsection{Fine-tuning}
+
+The output of an initial train from BERT can be used to fine-tune the
+model which
+is less computationally expensive. We take the network learned by the
+pretrained model
+and add a neural net classifier on top of it with supervised data, to
+perform a specific
+downstream task (such as named entity recognition). This basically
+replaces the head
+in the transformer model with a task-specific model. Using a
+pre-trained model to
+fine-tune is also called transfer learning.
+
+\begin{definition}[Transfer Learning]
+  Using a pre-trained model (such as BERT) and fine-tune the
+  parameters using labeled
+  data from downstream tasks (supervised learning).
+\end{definition}
+
+For classification tasks, the input of each text is given a special
+token \texttt{CLS},
+the output vector in the final layer for the \texttt{CLS} input
+represents the entire input
+sequence and can be used as input to a classifier head.
+
+For sequence-pair classification, or to find the relation between two sentences,
+a second special token \texttt{SEP} is used to separate the two input sequences.
+The model processes both sequences jointly, with the \texttt{CLS} token
+capturing the combined representation of the pair, which is then used
+by the classification head to determine the relationship.
+
+Finally, for named entity recognition, we model the head to give the
+label for each input token. Each token's output representation from the
+final layer is passed through a classification layer to predict
+its corresponding entity label, enabling token-level classification.
+
+If we use a pre-trained model without fine-tuning, this is called zero-shot.
+This can also be used for models that were fine-tuned by someone else
+on a different
+task such as using sentence similarity for ontology mapping,
+newspaper benchmark on
+tweets or a different language.
+
+\begin{definition}[Zero-shot learning]
+  Using a pre-trained model without fine-tuning, or a previously
+  fine-tuned model (on a different task).
+\end{definition}
+
+\begin{definition}[Few-shot learning]
+  Fine-tuning a pre-trained model on a small sample size.
+\end{definition}
+
+Although this works very well, the due to the complexity of the
+transformer model
+it is difficult to explain why the outputs from the model are what
+they are. Sometimes,
+word models are still used to better trace back why a model does
+certain predictions.
+
+\subsection{Quiz}
+
+\begin{quiz}[What is the kind of task used to learn word embeddings]
+  ~\\
+  Language modelling
+\end{quiz}
+
+\begin{quiz}[Which statements about context in sequential models are true?]
+  ~\\
+  LSTMs are sequential models with longer memories than traditional RNNs. \\
+  BERT models compute the relation between each pair of tokens in the input. \\
+  The attention mechanism in Transformer models has quadratic
+  complexity relative to the input length. \\
+  The maximum input length for BERT models is limited by
+  computational memory. \\
+\end{quiz}
+
+\begin{quiz}[What is the meaning of teacher forcing]
+  ~\\
+  Using true tokens instead of predicted tokens in generative training.
+\end{quiz}
+
+\begin{quiz}[Consider a sentiment analysis task, what do we need to
+  build a prediction model using transfer learning?]
+  ~\\
+  GPU computing, a pre-trained Chinese BERT model, a regression
+  layer, and the 1000 items for supervised fine-tuning.
+\end{quiz}

@@ -1,0 +1,182 @@
+\section{Generative LLMs}
+
+Generative pre-trained transformers are decoder-only transformers.
+Given a prompt, they can generate output text. When these transformers
+becomer larger in the number of parameters, they are trained for large amounts
+of data and fine-tuned for conversational use.
+
+The first model that was sufficiently large to be practically useful
+beyond language
+modelling was GPT-3. If we use a pre-trained or previously fine-tuned
+model without
+fine-tuning, that is called zero-shot use.
+
+The idea that the models get new capabilities that are not present in
+smaller models is called emergent abilities. These can not be predicted
+simply by extrapolating the performance of smaller models.
+
+In few-shot learning, we can give a few (3-5) examples and fine-tune the
+model with those examples. In LLMs, these examples are given in the prompt
+and the actual model is not changed.
+
+In GPT models, we sample a word in the output from the transformer's
+softmax distribution
+that results with the prompt as the left context. We then use the
+word embeddings
+for the sampled word as additional left context, and sample the next word in the
+same fashion. We continue generation until we reach an end-of-message
+marker, or a
+fixed length limit is reached.
+
+Because we sample from a probability distribution, the output is
+probablistic and
+not deterministic in nature. We can do this sampling in different
+ways. Greedy decoding
+samples the most probable token at each step, which might be locally
+optimal but not
+globally.
+
+\begin{definition}[Greedy decoding]
+  Choose the most probably token from the softmax distribution at each step.
+\end{definition}
+
+If we choose globally, we can take the highest possible outcome from different
+choices at each token. This is computationally heavy as we have to multiply all
+the possible choices with the successive choices.
+
+As an alternative, we can sample from the top-k most probable tokens.
+When $k = 1$ the
+sampling is identical to greedy decoding. If we set $k > 1$ it will
+sometimes select
+a word that is probably enough, generating a more diverse text. We
+can also use top-p sampling,
+which samples from words above a cut-off probability, and dynamically
+increases and decreases
+the pool of word candidates.
+
+\begin{definition}[Top-k sampling]
+  Sample a word from the top $k$ most probable words.
+\end{definition}
+
+\begin{definition}[Top-p sampling]
+  Sample a word from words with a probability above $p$.
+\end{definition}
+
+Finally, we can use temperature based sampling, which changes the
+probability distribution smoothing
+the probability based on for example smoothing in low temperatures. A
+higher temperature will result in
+more randomness and diversity, a lower temperature produces a  more
+focused and deterministic output.
+
+\begin{definition}[Temperature sampling]
+  Reshape the probability distribution instead of truncating it.
+\end{definition}
+
+\subsection{Pre-training LLMs}
+
+The pre-training task's objective in LLMs is to get as close as
+possible to predict the next
+word, using cross-entropy as a loss function. It measures the
+difference between a predicted
+probability distribution for the next word compared to the true
+probability distribution:
+
+\begin{definition}[Cross-entropy loss]
+  \begin{align*}
+    L_\text{CE} = - \sum_{w \in V} y_t [w] \log(\hat{y}_t) [w]
+  \end{align*}
+
+  Considering there is only one correct next word, it is one-hot, and
+  the formula can be adapted:
+
+  \begin{align*}
+    L_\text{CE}(\hat{y}_t, y_t) = -\log(\hat{y}_t) [w_{t+1}]
+  \end{align*}
+\end{definition}
+
+\subsubsection{Pre-training Data}
+
+Uses \textbf{Common Crawl} web data, a snapshot of the entire crawled
+web. Wikipedia and books.
+Data is filtered for quality, for example sites with PII or adult
+content. Boilerplate text is removed and
+the data is deduplicated. Finally, data is also filtered for safety,
+such as through the detection of illegal and toxic texts.
+
+\subsection{Evaluating Generative Models}
+
+If we want to evaluate generative models, we can generally compare it for
+tasks such as summarization or question answerings to human output.
+We can do this
+by measuring word overlap or semantic overlap.
+
+It is also convenient to have a quantitative measure for the quality of
+a pretrained model that is not task-specific. We can measure how well the
+model predicts unseen text, i.e. by feeding it a text that it has not seen
+before and see whether it completes the text correctly.
+
+This is also called the perplexity of the model on an unseen test
+set. In essence, this measures how suprised the model is to see the text.
+It is defined as the inverse probability that the model assigns to the test set,
+defined for model $\theta$:
+
+\begin{definition}[Perplexity]
+  \begin{align*}
+    \text{Perplexity}_\theta(w_{1:n}) = P_\theta(w_{1:n})^{-\frac{1}{n}}
+  \end{align*}
+\end{definition}
+
+\subsection{Finetuning LLMs}
+
+When we fine-tune BERT models, we update the network to the supervised
+task by applying transfer learning. For GPT-2 this was also possible as
+it did not have too much parameters to do this feasibly (BERT around
+110M, GPT-2 around 137M).
+Fine-tuning LLMs in this way is computationally not feasible, given
+GPT-3 has around 175B params
+and LLaMA3 8B or 70B params.
+
+Instead, we can do the following:
+
+\subsubsection{Continued pretraining}
+
+We take the parameters and retrain the model on new data, using the same
+method of word prediction and the loss function as was done for retraining.
+
+\subsubsection{Parameter-efficient finetuning (PEFT)}
+
+We only (re-)train a subset of the parameters on new data. An example of this is
+LoRa: Low-Rank (dimensionality reduction) adaptation of Large
+Language Models. In this case, the pretrained
+model weights are frozen, and we inject trainable rank decomposition matrices
+into each layer of the transformer. This can reduce the number of
+trainable parameters
+by a 10000 times. This results into somewhat of a proxy model of the
+original model.
+
+\subsubsection{Supervised finetuning (SFT)}
+
+We take a small LLM with around 2 or 3 billion paramters and train
+it to produce exactly the sequence of tokens in the desired output.
+
+\subsubsection{Reinforcement learning from human feedback (RLHF)}
+
+Let humans indicate which output they prefer, then train the model
+on this distinction. This is used often in tasks where it is difficult to define
+a ground truth, but where humans can easily judge the quality of the
+generated output.
+
+In the first step we learn a reward model from the pairwise comparisons done
+by humans. In the second step, we fine-tune the language model to the
+learned reward
+model, which aligns the model with human preferences.
+
+\subsection{Conversational LLMs}
+
+Conversational LLMs are GPT models that are fine-tuned for conversational
+usage. This is done through supervised finetuning, by training it
+with conversational
+data on the web (i.e. from Reddit). Then, RLHF was used to fine-tune
+the model to give
+appropriate and desired responses.
