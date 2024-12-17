@@ -1,0 +1,140 @@
+\section{Sentiment Analysis}
+
+Sentiment analysis started as people started to produce opinionated
+content in social media. For example, product reviews, comments or
+posts from users are interesting to analyise. Example tasks are to
+aggregate positive and/or negative opinions, compare aspects of products
+from reviews, analyse sentiment to political issues, companies or products, or
+to detect how opinions change over time.
+
+The term sentiment analysis is too generic, always specify what the task at
+hand really entails. Examples of this are opinion mining, sentiment
+classification,
+aspect-based sentiment extraction, subjectivity analysis, affect
+analysis, emotion detection or
+stance detection.
+
+\begin{definition}[Stance Detection]
+  Is someone in-favor, neutral or opposed towards a specific
+  statement or topic.
+\end{definition}
+
+Depending on the task, the labels differ. Basic classes for sentiment
+are negative,
+postiive or neutral. Objective versus subjective. Emotion can be joy,
+fear, anger, sadness,
+disgust, shame or guilt. Stance can be pro, con or neutral.
+
+Aside from basic classes such as negative, positive or neutral, we can
+also use ordinal scales (such as product reviews) that have a numerical
+range. In the case that we use orinal labels, we need a loss function
+that works with numeric values. This means that we need to use a regression,
+such as linear regression for continuous scales and ordinal regression if the
+output is categorical (but ordered).
+
+In summary, if we do document or sentence level sentiment analysis, we can
+do classification or regression on the document or sentences. If we do entity
+and aspect level sentiment analysis, we want to relate the sentiment to features
+of a product, event or entity and use extraction and classification.
+
+\subsection{Ordinal Regression}
+
+We can not represent some ordinal scales as a continuous variable, even though
+the values are ordered, there should not exist for example a negative or a half
+value, or the distance between multiple ordered values might differ.
+
+\begin{definition}[Loss function for Ordinal Regression]
+  \begin{align*}
+    P(y \leq j | \theta_j,w,X) = \frac{1}{1 + e^{-(\theta_j-wX)}}
+  \end{align*}
+
+  Where $y$ is the target variable, $\theta_j$ the threshold for class $j$,
+  $X$ the input instances and $w$ the weights to be learned.
+\end{definition}
+
+In this case the model learns the thresholds and the weights in parallel
+during training. The default training loss for transformer is the softmax,
+which is suitable for classification problems. However, if you want to do
+linear regression or ordinal regression, this loss function changes. For
+example using a mean-squared error as loss function, or another loss function
+that takes into account the ordinal nature of the labels.
+
+\subsection{Aspect-based Sentiment Analysis (ABSA)}
+
+In aspect-based sentiment analysis, we try to extract the sentiment that
+someone expresses at some place and time about aspects of entities. For example,
+someone might be postive about the travel times of public transport
+but is negative
+about the delays that often occur.
+
+The target is to find quintuple(s) with the following values:
+
+\begin{definition}[Aspect-based Sentiment Analysis Quintuple]
+  ~
+  \begin{itemize}
+    \item \textbf{Entity} - the opinion target, entity, event or topic.
+    \item \textbf{Aspect} - the aspect or feature of the entity.
+    \item \textbf{Sentiment} - the sentiment score of the aspect.
+    \item \textbf{Holder} - the opinion holder.
+    \item \textbf{Context} - the time and location of the expression
+  \end{itemize}
+\end{definition}
+
+An example of this in a review would be (iPad, Price, Reasonable,
+Username, Date).
+We can extract them as follows:
+
+\paragraph{Entity}
+
+In reviews, given by the metadata. In news or social media, it needs
+to be extracted
+from the text. NER or event detection.
+
+\paragraph{Aspect}
+
+Information Extraction and aspect categorization is needed. Aspects
+are domain dependent
+or even product dependent. They might be given in reviews as
+metadata. Challenging as a
+phrase like "the screen is dim" relates to the brightness.
+
+\paragraph{Sentiment}
+
+We are looking for sentiments of a given aspect, once we have the
+entity and aspect, we
+can classify the sentiment of the sentence(s) describing the aspect.
+
+\paragraph{Opinion Holder}
+
+In tweets and reviews, usually the author. In news, needs to be
+extracted from the
+text and NER can be used.
+
+\paragraph{Context}
+
+In tweets and reviews, date or location stamp. In news, we need time expression
+recognition and/or geolocation classification.
+
+\subsubsection{Knowledge Bases}
+
+It helps to use a product database for this analysis. This helps to narrow down
+which products exist (as someone might refer to a different product)
+and it helps to know
+which aspects a given product type has.
+
+\subsubsection{Challenges}
+
+A review can contain more than one product and references to that
+product can span
+over multiple sentences. Moreover, the same review can contain the
+opinions of multiple
+opinion holders. This can result into different aspects with
+different sentiments and
+co-references. Reviews can also contain factual statements (i.e. the
+product was returned)
+that state sentiment (negative) and sentiment words might not express
+sentiment (i.e. i was looking for a bright screen).
+Sentiment words in general are ambiguous, a bedside lamp that is
+bright might be negative, but
+a camera flash that is bright is positive.
+
