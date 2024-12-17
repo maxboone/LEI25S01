@@ -1,0 +1,257 @@
+\section{Topic Modelling and Summarization}
+
+Before doing annotation and supervised learning, we want to do data exploration.
+For example, what is a collection about, which topics are discussed
+and which topics are most prominent?
+The goals are to identify which topics the collection has, and
+identify the distribution of topics in each document.
+
+\subsection{Topic Modelling}
+
+\begin{definition}[Topic Modelling]
+  Unsupervised method: Topic modelling provides methods for
+  automatically organizing, understanding, searching and summarizing
+  large electronic archives. (Blei, 2009)
+\end{definition}
+
+This is an unsupervised technique, where we don't give topic labels,
+but we do specify the number of topics
+and it can be seen as a kind of clustering problem. Traditionally
+this is based on bag-of-words, so topics are
+defined by word occurrences. Words are only represented by their
+strings, so words with multiple meanings only
+get one representation in the model. Similarly, synonyms will be
+underrepresented.
+
+\subsubsection{Latent Dirichlet Allocation (LDA)}
+
+The most used technique for word-based topic modelling is Latent
+Dirichlet Allocation (LDA). Although there are better alternatives,
+this model is still often used and useful to understand. LDA is a
+probablistic model that looks how words and topics are distributed.
+
+In LDA a topic is defined as a probability distribution of words over
+a fixed vocabulary. For example, for a topic, what are the odds that we
+find the words environment, weather and sunshine. Besides, it has a distribution
+of documents over topics, such that each document covers only a small
+set of topics, which results into a sparse distribution (it is only probable
+for a small number of topics, and the majority is close to zero).
+Summarizing, it learns the probability distribution over words for
+each topic $k$
+and the probability distribution over all topics for each document $d$.
+Dirichlet in this context means that the prior knowledge is that each document
+has a small amount of topics.
+
+\subsubsection{BERTopic}
+
+A problem with LDA is that the bag of words are not contextual, and semantic
+representation is limited. If a word has different meanings in different
+topics the model becomes unstable. Instead we can use embeddings that contain
+semantic and syntactic information.
+
+First, we create document embeddings using a pre-trained language model. Then,
+we reduce the dimensionality of the document embeddings. Third, we
+create document
+clusters that represent distinct topics. Finally, we extract the
+topic representation
+for each cluster of documents.
+
+\paragraph{Document Embeddings}
+
+For document embeddings we can use Sentence-BERT (SBERT) which gives a single
+embedding for a text (sentence, paragraph or document). We could use
+other embedding
+techniques if the language model generating the embedding is
+fine-tuned on semantic
+similarity as long it gives you one embedding per span of words.
+
+\paragraph{Reduce Dimensionality}
+
+Given the embeddings, we lower the dimensionality of the embeddings,
+as clustering
+algorithms perform better on lower dimensional vectors. For this
+BERTopic uses UMAP,
+but approaches such as t-SNE or PCA could also work.
+
+\paragraph{Clustering}
+
+Given the low-dimension vectors, we can do clustering. BERTopic uses
+HDBSCAN for this
+which models clusters using a soft-clustering approach that allows
+noise to model as outliers.
+The hierarchical nature also visualizes nicely, and pushes down the noise.
+
+\paragraph{Extract Topic Representation}
+
+To show a textual description for the topics, we can use a variant of
+Tf-Idf where
+we treat all documents in a cluster a a single document, by
+concatenating them. We then
+get the term frequency of term $t$ in the pseudo-document $d$. The
+inverse collection frequency
+is then how often the term $t$ occurs in the whole collection.
+
+\subsubsection{Evaluation of Topic Modelling}
+
+There are multiple ways to evaluate a topic model, one of them is to use
+human judges. In this case you take the 5 high-probability topic words
+and add a random word. Verify if humans can get the odd-one out.
+
+Alternatively, you can do automatic evaluation based on distributional
+semantics. The intuition is that words that appear in similar contexts
+tend to be similar. Get the similarity of word pairs in the topics and
+see whether they are similar from an embeddings model or based on
+co-occurrence in the texts. The higher the pairwise similarity in the
+top-n words, the more coherent the topic is.
+
+\subsection{Automatic Summarization}
+
+The two main tasks for automatic summarization is to summarize a single
+document or the summarization of multiple documents to a single summarization.
+Single-document summarization is useful for tasks like search engine snippets,
+scientific articles, meeting reports or news articles.
+
+Multi-document summarization could be the collection of main points from
+a set of articles or summary of a conference, news about a single topic from
+multiple sources, summarizing multiple opinions from a discussion
+thread or summarization
+of multiple product reviews.
+
+\subsubsection{Baseline}
+
+A strong baseline for many documents is taking the first three sentences of
+of the document. Only state-of-the-art models outperform this "Lead-3 baseline".
+
+\subsection{Extractive Summarization}
+
+To do extractive summarization, we want to extract sentences from the
+document and
+classify those as relevant. We can do this unsupervised by centrality
+measures and
+supervised by using features (or labelled data).
+
+\subsubsection{Unsupervised Sentence Selection}
+
+Measure the cosine similarity between each sentence in and the document, either
+using the sparse vector space with words as dimensions, or the dense
+vector space
+using embeddings representations. These will be the most
+representative sentences
+in the document.
+
+\subsubsection{Supervised Sentence Selection}
+
+If we have labelled data, such as documents where people have selected relevant
+sentences from the text, we can train a classifier (such as SVM) on
+this. In that
+case the features would be the position of the sentence in the
+document (the beginning is generally better),
+how many content words are there, word lengths, punctuation, the
+sentence length and
+representativeness (i.e. centrality).
+
+Problems with sentence selection might be that we might select sentences that
+contain unresolved references to sentences that are not included in the summary
+or not explicity included in the original document.
+
+This might not be a problem in extractive summarization, as the task
+might just be to show a part of the text that is important with the option
+to expand the text instead of providing a final summary.
+
+\subsection{Abstractive Summarization}
+
+Abstractive Summarization provides a more fluent text that might contain words
+that were not in the original document. Models for this are
+encoder-decoder models
+such as T5, BART and PEGASUS, which can be fine-tuned for the
+specific summarization
+task. Alternatively, large language models can be prompted with
+examples for in-context
+learning. These models are trained with pairs of longer and shorter texts.
+
+Sources for these pairs are profesionally written summaries for
+benchmarking purposes,
+full articles and their abstract, editor-written summaries of comment
+threads (i.e. NY Times)
+and user-generated content such as tl;dr summaries. If you have the
+training data, the encoder-decoder
+models work well, if you don't have the data you can use LLMs for this purpose.
+
+\subsection{Challenges of Summarization}
+
+\subsubsection{Factual Consistency}
+
+When LLMs are used (or abstractive summarization in general) text is generated
+that is not in the original text. This might lead to hallucinations, where the
+summarization makes up things that are plausible but were not in the original
+text.
+
+\subsubsection{Summarization can be subjective}
+
+Two completely different summaries can both be good depending on what the goal
+is of your summary, although when one of the two summaries is considered good
+the other might be poor.
+
+\subsubsection{Bias}
+
+A lot of existing encoder-decoder models were trained on news data,
+and newspaper
+data is very different from other data. That is why Lead-3 is a very strong
+baseline.
+
+\subsubsection{Evaluation}
+
+Given a summary, it is difficult to evaluate whether the summary is correct.
+You can compute the overlap or similarity with human reference summaries. A
+widely used metric for this is ROUGE. Alternatively, the semantic closeness of
+two documents can be measured through their embeddings (through
+something like BERTScore).
+
+\begin{definition}[ROUGE]
+  \begin{align*}
+    \text{ROUGE-N} = \frac{
+      \text{\# n-grams in automatic and reference}
+    }{
+      \text{\# n-grams in reference summary}
+    }
+  \end{align*}
+\end{definition}
+
+In ROUGE, we look at the overlap of n-grams between the automatic and reference
+summary, meaning, we compute all the n-grams and then check what the recall is
+of the n-grams from the reference summary in the automatic reference summary.
+For ROUGE-L, the longest common subsequences are used, which
+identifies the longest
+n-grams that co-occur in both summaries. The limitation is that there
+can be different
+ways to convey the same meaning, but we can have very little literal overlap.
+
+In addition, we can use human judges which generally does not have a
+good overlap
+with these metrics.
+
+\subsection{Quiz}
+
+\begin{quiz}[How is a topic defined in LDA?]
+  ~\\
+  As a probability distribution over the collection's vocabulary
+\end{quiz}
+
+\begin{quiz}[In what stage does BERTopic use BERT?]
+  ~\\
+  Embedding the documents.
+\end{quiz}
+
+\begin{quiz}[Why is the LEAD-3 baseline difficult to beat in commonly
+  used benchmark sets?]
+  ~\\
+  Benchmark sets often consist of newspaper texts where the most
+  important information is
+  in the beginning.
+\end{quiz}
+
+\begin{quiz}[What is a common metric for evaluating automatic summarization?]
+  ~\\
+  ROUGE: the recall of n-grams in the automatically generated summary
+  compared to the reference summary.
+\end{quiz}
