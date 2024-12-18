@@ -1,0 +1,51 @@
+\documentclass{article}
+
+\usepackage[english]{babel}
+\usepackage[a4paper, margin=2cm]{geometry}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[many]{tcolorbox}
+\usepackage{cmbright}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\tcolorboxenvironment{definition}{
+  colback=blue!5!white,
+  boxrule=0pt,
+  boxsep=1pt,
+  left=2pt,right=2pt,top=2pt,bottom=2pt,
+  oversize=2pt,
+  sharp corners,
+  before skip=\topsep,
+  after skip=\topsep,
+}
+
+\theoremstyle{quiz}
+\newtheorem{quiz}{Quiz}[section]
+\tcolorboxenvironment{quiz}{
+  colback=green!5!white,
+  boxrule=0pt,
+  boxsep=1pt,
+  left=2pt,right=2pt,top=2pt,bottom=2pt,
+  oversize=2pt,
+  sharp corners,
+  before skip=\topsep,
+  after skip=\topsep,
+}
+
+
+\usepackage[T1]{fontenc}
+
+\title{Advances in Data Mining - Summary}
+\author{Max Boone}
+\date{\today}
+
+\begin{document}
+\input{lectures/01.tex}
+\input{lectures/02.tex}
+\end{document}

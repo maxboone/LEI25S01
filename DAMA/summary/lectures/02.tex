@@ -1,0 +1,133 @@
+\section{Recommender Systems}
+
+There are different approaches to recommender system, the idea is
+basically that you have a mapping of users onto items and use this
+mapping to learn the value of an item to a user that is not in the
+mapping.
+
+Generally, we have a matrix of the size users $\times$ items and
+it is generally filled with ratings, interest, history or some other
+value that represents the relation. Such matrices are very large and
+usually sparse.
+
+\subsection{Naive Approach}
+
+The baseline approach is to take the mean of the entire matrix, item or user.
+A bit more advanced we can do a linear regression modeled as:
+
+\begin{definition}[Naive Linear Recommender]
+  \begin{displaymath}
+    R_\text{user-item}(u, i) = \alpha \times R_\text{user}(u, i) +
+    \beta \times R_\text{item}(u, i)
+  \end{displaymath}
+\end{definition}
+
+The linear regression returns good results, is easy to calculate and
+update, and allows for simple interpretation of the model (good movie,
+harsh user, crowd follower).
+
+\subsection{Content-Based Approach}
+
+The intuition for Content-based Approaches is to construct a profile
+for every item and a profile of every user, and see which items are
+closest to the user profile. The profile generally contains labels such
+as budget, genre, origin, cast, et cetera. The baseline would be to take
+the mean of each dimension of the profile for a user.
+
+\subsubsection{Model-Based Approach}
+
+The content-based approach assumes that you can fill in these parameters
+for users yourself (or source it from the user themselves). However, we
+can also train a model per user that predicts rating from the item profiles.
+Pitfalls here are that it is expensive to build and maintain, the accuracy
+is low and it doesn't work with new users.
+
+\subsection{Collaborative Filtering}
+
+An alternative to item-specific profiles is to recommend items to users based
+on what similar users have liked. You can either do user-to-user collaborative
+filtering or item-to-item collaborative filtering.
+
+\paragraph{User-User Recommendations}
+
+Each user has a vector with ratings for every item that they have rated. Users
+with similar vectors are selected as neighbours. We then take the top
+$L$ neighbours
+and aggregate their ratings to predict the rating.
+
+\paragraph{Item-Item Recommendations}
+
+Each item has a vector with ratings for every user that have rated it. Items
+with similar users are selected as neighbours. We then take the top
+$L$ neighbours
+and aggregate their ratings to predict the rating.
+
+The main differences here are that for either category insertion of new items
+or users creates a cold start problem respective of the type of collaborative
+filtering. Furthermore, user-to-user filtering has a higher personalization,
+suffers more from sparsity, is less scalable with larger user bases and may
+fluctuate with user behaviour. However, as it takes the user as the comparison
+base, the personalization is better.
+
+\subsection{Singular Value Decomposition}
+
+A large motivator for changes in recommendation algorithms
+was the Netflix Challenge. Before, as discussed in the introduction
+we can do recommendation by matching pairs of users and ratings to
+estimate ratings for new users (based on other ratings).
+
+A possible approach to recommending movies by using the user ratings
+is the CINEMATCH system, which was state-of-the-art in 2006. While
+this approach worked well, Netflix decided to set up a challenge for
+scientists to improve the recommendation system.
+For this challenge you would predict ratings based on a training set
+and submit them. The improvement was measured using the RMSE.
+
+\begin{definition}[RMSE]
+  \begin{align*}
+    \text{RMSE} = \sqrt{
+      \frac{1}{n} \sum^n_{i=1} (
+        \text{predicted} - \text{true}
+      )^2
+    }
+  \end{align*}
+\end{definition}
+
+\subsection{Matrix Factorisation - UV Decomposition}
+
+One approach for recommendation is the use of matrix factorisation,
+where the users and ratings are combined into a utility matrix. This
+matrix is then split into a user matrix (with a fixed dimension) and
+a vector matrix (with a fixed dimension). Ratings can then be approximated
+by multiplying a specific user vector with the transpose of an item vector
+and summing the output. The dimension lengths are fixed before doing
+the decomposition but their semantic ``meaning'' and values are learned
+from the data.
+
+If we encode a loss function to be a polynomial that measures the distance
+between the predicted values and the true values (like the MSE) we can do
+learn the correct values for U and V (where the MSE is minimal).
+
+For example, we can do a simple line search, this initializes all variables
+randomly, chooses a random parameter (with the rest frozen) and then finds the
+optimal value for that parameter. It does that by calculating the derivative
+of that parameter and chooses the optimum.
+
+The gradient descent algorithm is a better alternative, which takes the loss
+function and chooses an arbitrary point in the multi-dimensional space. Then,
+it finds a direction in which the loss function is decreasing the most rapidly
+using partial derivatives and makes a small step in that direction. It repeats
+this until a local minimum is reached.
+
+Finally, an alternative is to use alternating least squares, which reduces the
+distance in an alternating fashion between the user and item matrices.
+First, freeze the user features and treat all item features as variables,
+solve the resulting least squares problem. Then, freeze the item features
+and treat the user features as variables and solve resulting least squares.
+
+\subsection{Boosting Accuracy - Blending Models}
+
+Better results were ultimately achieved by blending different algorithms
+together. For example, first you can train the initial values using a regression
+model instead of choosing random parameters.
+

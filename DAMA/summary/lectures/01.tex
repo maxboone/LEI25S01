@@ -1,0 +1,94 @@
+\section{Introduction to Data Mining}
+
+If we look at the change in processing speed and the
+speed of data collection, we can deduce that every 3
+years the processing speed increases by a factor 4 and
+the collected data by a factor 8.
+
+\begin{definition}[Moore's Law]
+  Processing speed doubles every 18 months
+\end{definition}
+
+\begin{definition}[Kryder's Law]
+  Hard disk capacity doubles every 12 months
+\end{definition}
+
+\begin{definition}[Lyman \& Varian]
+  The amount of collected data doubles every year
+\end{definition}
+
+Meaning, every 3 years, the overflow of data (or flood)
+is doubling. Besides the total amount of data, the shape
+of the data has also changed over time.
+This new data is also called Big Data, generally characterized
+by the "Three Vs of Big Data" (IBM):
+
+\begin{definition}[Three Vs of Big Data (IBM)]
+  ~
+  \begin{itemize}
+    \item \textbf{Volume} - Large size of data (terabytes, petabytes).
+    \item \textbf{Velocity} - Speed of added data is fast, and needs
+      to be processed fast.
+    \item \textbf{Variety} - Structured and unstructured data, such
+      as text, sensor data, audio, video, click streams, log files and more.
+  \end{itemize}
+\end{definition}
+
+To be able to process such big data, we need to do fuzzy queries and
+we want to be able to run the processes in a streaming fashion. Traditionally
+these are easy to execute, but complex in this context.
+The trade-off therein is accuracy for speed (a rough answer in
+real-time is sufficient).
+
+\subsection{Examples}
+
+\subsubsection{Recommender Systems}
+
+Given petabytes of sales data in the form \textit{<user\_id, item\_id>}
+we want to do recommendations to the \textit{current\_user\_id}
+that just clicked or bought \textit{current\_item\_id} and
+we have only milliseconds to do this.
+
+This is a fairly simplified scenario, as you generally have
+a lot more information on users to do these recommendations.
+
+\subsubsection{Data Stream Mining}
+
+In some situations, the incoming stream of data is too large
+or too fast to be stored, and needs to be analyzed on-the-fly
+with limited memory.
+
+Examples of this are to detect fraud in electronic transactions, showing
+the correct advertisements, prognostic health monitoring of a fighter jet,
+detection of DoS attacks, or returning rankings from current interests
+or click streams from users.
+
+\subsection{Data Mining Paradigms}
+
+We can group data mining activities into two separate paradigms: supervised
+and unsupervised learning.
+
+\begin{definition}[Supervised Learning]
+  We have a set of defined inputs and defined outputs and
+  try to build a model that converts input into these outputs
+\end{definition}
+
+\begin{definition}[Unsupervised Learning]
+  The outputs are characteristics and generally tries to learn
+  similarity from the data.
+\end{definition}
+
+\subsection{Overfitting}
+
+If we would train our model on all the data that we have, we
+have the risk to overfit on the data. This means that it follows
+the data closely, but will not work with unseen data. Thus, we
+separate the training data from test and evaluation data, and
+use approaches to avoid overfitting on the training data.
+
+For example, we can use $k$-Fold Cross-Validation where we split
+the training data (stratified) in to $k$ folds and use ($k - 1$)
+folds for training and $1$ for testing. Repeat this $k$ times
+and average the results. A downside of this is that it is
+computationally expensive (but parallelizable).
+
