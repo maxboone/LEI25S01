@@ -102,7 +102,67 @@ update the signature values for each column and each hash function in
 parallel, keeping track of the minimum hash values. This approach
 avoids the need for explicit permutations.
 
-\begin{definition}[]
-  
+\begin{definition}[Minhashing without Permutation]
+  ~
+  \begin{itemize}
+    \item Define a family of $n \rightarrow n$ hash functions $h_1,
+      h_2, \dots, h_k$ to simulate the effect of row permutations.
+    \item Initialize the signature matrix $\text{Signature}[i][C]$
+      with $\infty$ for all hash functions \(i\) and columns \(C\).
+    \item Process the binary matrix row by row:
+      \begin{itemize}
+        \item For each row \(r\):
+          \begin{itemize}
+            \item Compute \(h_i(r)\) for all hash functions \(h_1,
+              h_2, \dots, h_k\).
+            \item For each column \(C\) in that row where the matrix
+              has a \(1\):
+              \begin{itemize}
+                \item For each hash function \(h_i\), update the
+                  signature value:
+                  \begin{align*}
+                    \text{Signature}[i][C] =
+                    \min(\text{Signature}[i][C], h_i(r))
+                  \end{align*}
+              \end{itemize}
+          \end{itemize}
+      \end{itemize}
+    \item The resulting signature matrix stores the smallest hash
+      values observed for each column and each hash function,
+      effectively simulating the effect of random row permutations.
+  \end{itemize}
 \end{definition}
 
+\subsubsection{Locality-Sensitive Hashing}
+
+Now that we have converted the large and sparse binary matrix to a
+smaller matrix of similarity hashes, the memory constraint is
+removed. However, calculating the real similarities between the
+pairs is still an expensive task. The idea behind locality-sensitive
+hashing is to split the columns of the signature matrix into bands of
+the same size. If two columns are very similar, then it is likely that
+at least one band will be identical.
+
+Instead of first calculating the bands, we can determine candidate
+pairs from columns that hash at least once to the same bucket. Split
+the rows up into bands and calculate a number of hashes for all columns
+in the bands. When two columns hit the same bucket, consider them similar
+and record the pair.
+
+\begin{definition}[Locality-Sensitive Hashing]
+  ~
+  \begin{itemize}
+    \item Split the signature matrix in $b$ bands
+    \item For over all the columns $c$ in all bands calculate
+      hashes that map to $k$ buckets.
+    \item Whenever a column $c$ in a band maps to the same bucket
+      as another column, consider them similar and record the pair.
+  \end{itemize}
+\end{definition}
+
+Summarizing, the probability that the signatures agree on one row is
+$s$ (the Jaccard similarity) and $P_\text{band} = s^k$ that they agree
+on one particular band (or $1 - s^k$ that they are not identical).
+The probability that they are not identical in any of the $b$ bands is
+$(1 - P_\text{band})^b$. Finally, the probability of becoming a candidate
+pair is $t \approx \frac{1}{b}^{\frac{1}{r}} = \sqrt[r]{\frac{1}{b}}$
