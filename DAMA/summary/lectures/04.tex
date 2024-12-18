@@ -1,0 +1,108 @@
+\section{Similarity Search}
+
+In the task of determining the similarity between users $U_1$ and
+$U_2$ based on the sets of movies they have watched, a naive approach
+involves comparing all possible user pairs. This results in a
+computational complexity of $O(n^2)$, where $n$ is the number of
+users. To address this challenge efficiently, we focus on identifying
+pairs of users with high similarity.
+
+\subsection{Jaccard Similarity}
+
+One commonly used metric for measuring the similarity between two
+sets is the Jaccard Similarity. This metric quantifies the overlap
+between two sets by comparing the size of their intersection to the
+size of their union.
+
+\begin{definition}[Jaccard Similarity]
+  \begin{displaymath}
+    \text{Similarity}(C_1, C_2) = \frac{
+      \left|C_1 \cap C_2\right|
+    }{
+      \left|C_1 \cup C_2\right|
+    }
+  \end{displaymath}
+\end{definition}
+
+The assumption here is that we don't have to bother about all the movies
+that we didn't watch together, it only takes into account the movies that
+we did see.
+
+\subsection{Candidate Selection for Similar Pairs}
+
+In this case we would still have to execute this similarity calculation on
+all possible user pairs, even those that have a very small overlap. To select
+a set of users that we will run similarity tests on, we can use min-hashing
+to generate signatures and use locality-sensitive hashing to generate candidate
+pairs to test for similarity.
+
+First, we run a min-hashing algorithm to generate signatures, which are short
+integer vectors that represent the sets and reflects their similarity. Then, we
+run locality-sensitive hashing to get pairs of signatures that we need to test
+for similarity.
+
+\subsubsection{Shingles}
+
+If we don't look at user-movie selection, but rather document-text selection to
+do for example plagiarism checks, we can use shingles (or grams) as a measure of
+similarity. For example, if we have a document $abcab$ and we take $2-grams$ we
+get the set of ${ab, bc, ca}$. Alternatively, instead of characters, we can use
+a sequence of $k$ consecutive words. For example, $child in his eyes$
+will result
+in ${child in, in his, his eyes}$.
+Finally, we represent the document by a binary column of the set of
+$k$-shingles.
+Documents with a lot of shingles in common have similar text, even if the text
+appears in a different order. However, you need to pick $k$ large
+enough, or most
+document will have most shingles.
+To compress long shingles, we can hash them to uints as we can easily
+compare and
+store such values.
+
+\subsubsection{Minhashing}
+
+We can take the column of the user-movie, or document-shingles binary matrix
+and replace the binary columns with a short signature. The goal is that if the
+columns are similar, the signatures should be similar. We can't sample from the
+rows and let the signature be those bits only, as the input matrix is likely to
+be very sparse. Rather, we use the notion that the ordering of the matrix is not
+relevant to the similarity calculation.
+
+\begin{definition}[Minhashing]
+  ~
+  \begin{itemize}
+    \item Permute (swap) the rows randomly (or generate a random
+      sequence of row indices)
+    \item Define hash function $h(C)$ as the position of the first
+      permuted row in $C$ that has a $1$.
+    \item Run this several (i.e. 100) times independently and
+      concatenate to create a signature
+    \item The similarity of two signatures is then the fraction of
+      signature elements that match
+  \end{itemize}
+\end{definition}
+
+We see that the probability that $h(C_1) = h(C_2)$ is very close to
+$\text{Sim}(C_1, C_2)$. Consider that if we check two hashes and they
+are not the same, we note that down as a type $S$ row. If they are equal
+we note that down as a type $B$ row. The overall probability is then
+$\frac{B}{B + S}$ or, the equal over the total rows, which is the same
+as the Jaccard Similarity (intersection over union).
+
+The main challenge of minhashing arises when dealing with a very
+large number of entries, as generating and storing a true random
+permutation of rows becomes computationally expensive and
+memory-intensive. Furthermore, accessing rows in the permuted order
+can lead to inefficient memory access patterns, such as thrashing or
+excessive swapping. To address this, instead of explicitly permuting
+rows, we use $n \rightarrow n$ hash functions to simulate the effect
+of permutations. By processing the matrix top-down row by row, we
+update the signature values for each column and each hash function in
+parallel, keeping track of the minimum hash values. This approach
+avoids the need for explicit permutations.
+
+\begin{definition}[]
+  
+\end{definition}
+
