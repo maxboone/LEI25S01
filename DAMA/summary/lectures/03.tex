@@ -7,3 +7,153 @@ neural networks, et cetera) in real time. Specifically, we might
 be interested in queries over the last $N$ records (sliding window)
 or a sample of everything that we have seen so far (i.e. the last $N$ days).
 
+\subsection{Data Stream Sampling}
+
+Generally, high velocity data streams (such as global-scale events) are
+too large to mine, thus we need to sample events from these data streams.
+Naively, we can take a modulo, for example $(n mod 100) < c$ which will take
+$c\%$ samples from the stream. Alternatively, we could take random selections
+from a probability $c / 100$.
+
+However, there are problems with this as we run the risk of representing items
+from some groups more than others, and it might not be representative
+of the entire
+stream.
+We could also create groups, or a list of clients, and take a sample from them.
+Whenever an event comes by, we check if it is from a client that is in our hash
+map. This might become problematic if we have a large number of
+users, as the worst
+case hase to represent all users in the table. Moreover, the list of
+clients is a snapshot
+and might not reflect the current active users.
+
+Alternatively, we could alter the hash function such that we don't store
+the value in a hashmap but rather map the unique clients to integers between
+1 to 100 and use this to sample the first n integers. However, when the amount
+of data grows, the memory usage also grows if we keep the same sampling ratio.
+
+\subsubsection{Reservoir Sampling}
+
+Suppose the memory can store $s$ records, initially we store all the records
+in the memory and the probability of an element entering is
+$\frac{s}{n} = 1$. When
+the $(i + 1)$th element arrives, decide with probability $\frac{s}{i
++ 1}$ to keep
+the record in RAM. Otherwise, ignore it. If you choose to keep it, throw one of
+the previously stored records out, selected with equal probability, and use the
+free space for the new record.
+
+\begin{definition}[Reservoir Sampling]
+  ~
+  \begin{itemize}
+    \item Suppose we can store $s$ records
+    \item Store all incoming records until $i$ is $s$
+    \item For every subsequent record, decide with probability $\frac{s}{i+1}$
+      to keep the record.
+    \item If the record is to be kept, replace a random record in the store.
+  \end{itemize}
+\end{definition}
+
+\subsection{Bloom Filters}
+
+Bloom Filters allow to classify entries as positive or negative,
+where we are certain that a real positives are never classified as
+negative, but have no problems with a small number of false positives.
+Generally, the idea is that we filter out the majority cases where we
+are sure that an (expensive) computation will be negative or not
+required.
+
+First, decide on a memory space that you have and write a hash function
+that encodes the search input to a one-hot encoding in this memory space.
+Finally, set all bits to 1 for the positive values and whenever an
+input points to a positive bit, consider it positive.
+
+To improve, we can use multiple hash functions simultaneously and in the
+case of a positive number, set all bits to one. In that case, all $k$ positions
+in the memory need to be set to one to indicate a positive input.
+
+\begin{definition}[Bloom Filter - False Positives]
+  ~
+  \begin{align*}
+    \left( 1 - \frac{1}{N} \right)^kn &=
+    \left[ \left( 1 - \frac{1}{N} \right) \right]^{\frac{kn}{N}}
+    \approx e^{-\frac{kn}{N}} \\
+    \lim_{x\to\infty} \left(1 - \frac{1}{x}\right)^x &= e^{-1} \\
+    k_{opt} &= \frac{N}{n} \times \ln{2}
+  \end{align*}
+\end{definition}
+
+\subsection{Probablistic Counting}
+
+Given a data stream of a size $n$ we want to count how many distinct
+items we have seen. Generally, you would count $n$ using a hash map,
+however if the size of $n$ gets larger storing the hash map might not
+be feasible. If we accept that we have some loss of accuracy, we can
+use probablistic
+counting approaches.
+
+\subsubsection{MinTopK Estimate}
+
+Hash incoming objects into doubles in the interval $[0, 1]$ and count
+them, shrinking the interval if needed. Maintain only the $K$ biggest
+values, say, $K = 1000$. If $s$ is the minimum value of the tracked set,
+the number of distinct elements is approximately $K / (1 - s)$.
+
+\begin{definition}[MinTopK Estimate]
+  ~
+  \begin{itemize}
+    \item Pick a hash function $h$ that maps $m$ elements to a float
+      in the interval $[0, 1]$.
+    \item For each stream element $a$, calculate $h(a)$ and store the hash if it
+      is in the top $K$ hashes.
+    \item The number of distinct elements is approximately $K / (1 - s)$.
+  \end{itemize}
+\end{definition}
+
+\subsubsection{Flajolet-Martin}
+
+The intuition is that you hash passing elements into short bitstrings,
+store only the length of the longest tail of zeroes, and the more distinct
+elements, the longer the longest tail of zeroes. To estimate the number
+of distinct elements, use $2^R / \Phi$:
+
+\begin{definition}[Flajolet-Martin]
+  ~
+  \begin{itemize}
+    \item Pick a hash function $h$ that maps $m$ elements to $lg m$ bits.
+    \item For each stream element $a$, let $r(a)$ be the number of
+      trailing $0$s in $h(a)$
+    \item Record $R$ = the maximum $r(a)$ seen
+    \item Estimate the number of distinct elements as $\frac{1}{\Phi}
+      2^R$ where $\Phi = 0.77351$
+  \end{itemize}
+\end{definition}
+
+The probability that $h(a)$ ends in at least r zeroes is $2^{-r}$.
+If there are $m$ differente elements, the probability that none of them
+have $r$ zeroes (so $R \geq r$) is $1 - (1 - 2^{-r})^m$.
+Pitfalls are that $2^R$ is a power of $2$, meaning that there are larger
+jumps as we come across larger items. Bad luck can return in huge errors,
+but we can work around that by running parallel copies using different
+hash functions and average the results.
+
+\subsubsection{LogLog}
+
+An update to the Flajolet-Martin algorithm by Durand and Flajolet is the
+LogLog algorithm. This uses stochastic overaging and calibration, where
+the samples are partitioned into $n = 2^I$ groups using the first $I$
+bits of the hash function as a selector. If $n = 1024$, the relative
+error is around $3\%$ to $4\%$
+
+\begin{definition}[LogLog]
+  ~
+  \begin{itemize}
+    \item Partition the samples into $n = 2^I$ groups, with the first
+      $I$ bits of the hash as selector
+    \item Calculate $R_1, \dots, R_n$
+    \item Return $a_n * n * 2^{\text{mean}(R_1,\dots,R_n)}$
+  \end{itemize}
+\end{definition}
+
+This results in bit strings of length $log n$ and we maintain the length
+of the longest tail of zeroes: $log log n$.
