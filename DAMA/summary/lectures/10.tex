@@ -1,0 +1,137 @@
+\section{Anomaly Detection}
+
+There are many different use cases for anomaly detection,
+and different approaches fit to different types of anomalies
+that need to be detected. One such example is finding anomalies
+in health care data, specifically about declarations, payments,
+and corrections. Insurance companies can't check all the cases
+individually, and we would like to find such anomalies.
+In this case, this problem is unsupervised, we don't have data
+where certain transactions are labelled as fraud that we can
+go off.
+
+\subsection{Exploratory Data Analysis}
+
+As a starting point, the data is often not structured for use
+in anomaly detection. First, the data can be structured into
+well-understood variables and tables, and we can look at some
+simple descriptives of the data: missing, invalid, extremes and
+outlier values. For example for healthcare:
+
+\begin{itemize}
+  \item Large amounts of declarations on a single day
+  \item Missing or invalid treatment codes
+  \item Large amounts of treatments within a single day
+\end{itemize}
+
+This generally results in the formulation of rules, with the
+input from domain experts:
+
+\paragraph{Soft Rules}
+
+We don't want to be too strict on detecting fraud, as there can
+be a lot of simple mistakes, or errors that \textit{can} happen
+but are unlikely. Rather, we can allow things but flag them when
+they happen too frequently, i.e. above the 99th percentile.
+
+\paragraph{Hard Rules}
+
+Rules that are fully illegal and there should be no leeway for
+using that rule. For example, receiving the same transaction twice,
+booking the same consultation multiple times.
+
+\subsection{Regression Model}
+
+A case where we are able to train supervised models is to validate
+if the quotes that were given for a (insured) repair is an anomaly.
+First, we train a regression model on our input data, and use the
+residual as an anomaly score. Given a new case, apply the model and
+see if the residual is larger than some threshold (generally use the
+$\sigma$).
+
+\subsection{Local Outlier Factor}
+
+Many algorithms to find outliers use the density, if it is
+outside of the confidence intervals of a distribution, we consider
+it an outlier or anomaly. However, the density is not always uniform
+and points outside the distribution do not have to be outliers.
+The idea behind the Local Outlier Factor is to use the density
+of the neighbouring points, instead of just the considered point.
+
+We compute the neighbours, and calculate what the distance is to
+the $k$-th neigbour (and skip the $k-1$ neighbour). Compare the density
+to the density of neighbours. If the distance is much larger, consider
+it an outlier.
+
+\begin{definition}[Local Outlier Factor]
+  ~
+  \begin{itemize}
+    \item Compute the distance between two points $a$ and $b$: $d(a, b)$.
+    \item Determine the $k$-distance of a point $a$, which is the
+      distance to its $k$-th nearest neighbor.
+    \item Calculate the reachability distance of a point $b$ with
+      respect to a point $a$:
+      \[
+        \text{reach-dist}_k(a, b) = \max\big(\text{k-distance}(b), d(a, b)\big).
+      \]
+    \item Compute the average reachability distance of a point $a$:
+      \[
+        \text{avg-reach-dist}_k(a) = \frac{\sum_{b \in
+          \text{neighbors}_k(a)} \text{reach-dist}_k(a,
+        b)}{|\text{neighbors}_k(a)|}.
+      \]
+    \item Calculate the local reachability density of $a$:
+      \[
+        \text{lrd}_k(a) = \frac{1}{\text{avg-reach-dist}_k(a)}.
+      \]
+    \item Compute the Local Outlier Factor (LOF) score for $a$:
+      \[
+        \text{LOF}_k(a) = \frac{\sum_{b \in \text{neighbors}_k(a)}
+        \text{lrd}_k(b)}{\text{lrd}_k(a) \cdot |\text{neighbors}_k(a)|}.
+      \]
+  \end{itemize}
+\end{definition}
+
+Advantages are that local density estimation works pretty well, is
+well applicable
+and there are efficient implementations available. However, the
+scores are difficult
+to interpret and don't have a clear boundary between inliers and
+outliers. Moreover,
+it doesn't work with high-dimensionality because
+nearest-neighbourhoods algorithms
+don't work with it. Difficult to extract or apply a dissimilarity feature.
+
+\subsection{Isolation Trees}
+
+The main idea is that we build a decision tree, and a shallow leaf will indicate
+that it classifies an outlier. The intuition is that deep leafs were
+difficult to
+separate from other elements, and shallow leafs were obvious cases.
+The approach is to train a random forest of the data and average the isolation
+depth for attributes.
+
+In this case, the anomaly score can be calculated from the expected path length
+in a tree of $n$ nodes, where $H(i)$ is the $i$-th harmonic number,
+defined as $ln(i + \gamma)$
+and $\gamma = 0.577721$ (Euler-Mascheroni constant):
+
+\begin{align*}
+  c(n) = 2H(n - 1) - \frac{2(n - 1)}{n}
+\end{align*}
+
+The anomaly score for a point $x$ is then given by:
+
+\begin{align*}
+  s(x, n) = 2^{-\frac{h(x)}{c(n)}},
+\end{align*}
+
+Where $h(x)$ is the average path length of $x$ in the
+isolation trees.
+
+\begin{itemize}
+  \item If $s(x, n) > 0.5$, the point $x$ is likely an outlier.
+  \item If $s(x, n) \approx 0.5$, the point $x$ is likely an inlier.
+  \item If $s(x, n) < 0.5$, the point $x$ is likely central.
+\end{itemize}
+
