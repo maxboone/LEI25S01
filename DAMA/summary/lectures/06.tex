@@ -106,4 +106,80 @@ Instead of a binary target, we might have a numeric target. The idea is
 that we find subgroups with a significantly higher or lower average value.
 The trade-off is the size of the subgroup and the average target value.
 
+Some quality measures are:
+
+\begin{definition}[Average]
+  \begin{align*}
+    \varphi_{avg}(s) = \frac{\sum^n_{i=1}t_i}{n}
+  \end{align*}
+\end{definition}
+
+Note that the average doesn't take the size into account
+of the subgroup, the following measures do:
+
+\begin{definition}[Mean Test]
+  \begin{align*}
+    \varphi_{mt}(s) = \sqrt{n}(\mu - \mu_0)
+  \end{align*}
+\end{definition}
+
+\begin{definition}[z-score]
+  \begin{align*}
+    \varphi_{z}(s) = \frac{\mu - \mu_0}{\sigma_0/\sqrt{n}}
+    = \frac{\sqrt{n}(\mu - \mu_0)}{\sigma_0}
+  \end{align*}
+\end{definition}
+
+\begin{definition}[t-Statistic]
+  \begin{align*}
+    \varphi_{t}(s) = \frac{\mu - \mu_0}{\sigma/\sqrt{n}}
+  \end{align*}
+\end{definition}
+
+\subsection{Exceptional Model Mining}
+
+SubDisc (formerly Cortana) does classical subgroup discovery
+as in nominal or numeric targets. But it also does Exceptional
+Model Mining, where there are multiple targets such as regression,
+correlation and multi-label classification.
+
+For example, we have a distribution that clearly contains a linear
+model but also a lot of background noise. We want to extract the
+data points that regress well and do another model on the other
+data.
+
+\subsubsection{Quality Measures}
+
+\paragraph{Correlation Model}
+\begin{itemize}
+  \item \textbf{Correlation coefficient}:
+    \begin{align*}
+      \varphi_\rho = \rho(S)
+    \end{align*}
+  \item \textbf{Absolute difference in correlation}:
+    \begin{align*}
+      \varphi_{abs} = | \rho(S) - \rho(S_0) |
+    \end{align*}
+  \item \textbf{Entropy weighted absolute difference}:
+    \begin{align*}
+      \varphi_{ent} = H(p) \cdot | \rho(S) - \rho(S_0) |
+    \end{align*}
+  \item \textbf{Statistical significance of correlation difference}:
+    \begin{itemize}
+      \item Compute z-score from \( \rho \) through Fisher transformation.
+      \item Compute p-value from z-score.
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Regression Model}
+\begin{itemize}
+  \item Compare slope \( b \) of
+    \begin{align*}
+      y_i = a + b \cdot x_i \quad \text{and} \quad y_i = a_0 + b_0 \cdot x_i
+    \end{align*}
+  \item Compute significance of slope difference:
+    \begin{align*}
+      \varphi_{ssd} = \frac{b - b_0}{\text{Standard Error of } b}
+    \end{align*}
+\end{itemize}
 
