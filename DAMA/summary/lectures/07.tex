@@ -25,37 +25,78 @@ from the original dataset.
 
 \begin{definition}[Bagging]
   \begin{itemize}
-    \item Take random samples with replacement
+    \item Take random samples with replacement.
     \item Given a training set $D$ of size $n$, generate $m$
-      new training sets $D_1,...,D_m$ each of size $n$.
+      new training sets $D_1, \dots, D_m$ each of size $n$.
     \item Replacement means that some observations will be
       repeated in each sample.
-    \item For a large $n$, $D_i$ will have a fraction of $(1 -
-      \frac{1}{e})$ samples.
-      Meaning, around $63.2\%$ unique samples and $36/8\%$ duplicates.
+    \item For a large $n$, each $D_i$ will contain approximately $(1 -
+      \frac{1}{e}) \approx 63.2\%$ unique samples and $36.8\%$ duplicates.
   \end{itemize}
 \end{definition}
 
-Overfitting is avoided in this case as the learnes have little
-correlation as they learn from different datasets. The optimal
-amount of learners can be determined by cross-validation or OOB 
+Overfitting is avoided in this case as the learners have little
+correlation, given that they learn from different datasets. The optimal
+number of learners can be determined by cross-validation or Out-of-Bag (OOB)
 estimation.
 
 \subsubsection{Random Subspace Method}
 
 A follow-up of bagging is the random subspace method. Instead of
 sampling, we build each tree in the ensemble from a random subset of
-the attributes. This mainly works for high-dimensional problems and
-individual trees won't over-focus on attributes that appear the most
+the attributes. This method is particularly effective for
+high-dimensional problems
+as individual trees are prevented from over-focusing on attributes
+that appear most
 predictive in the training set.
 
 \subsubsection{Random Forests}
 
-Finally, random forests first select a set of random attributes and
-set the best attributes from the random subset on each node. The amount
-of attributes is $\sqrt{p}$ for classification and $\frac{p}{3}$ attributes
-for regression. It also uses out-of-bag estimation:
+Random forests combine the ideas of bagging and the random subspace method.
+At each split in a tree, a random subset of the attributes is
+selected, and the best
+split is chosen from this subset. The number of attributes selected is typically
+$\sqrt{p}$ for classification and $\frac{p}{3}$ for regression, where
+$p$ is the total
+number of attributes. Random forests also employ out-of-bag (OOB) estimation for
+model evaluation and tuning.
 
-  \begin{definition}[Out of Bag Estimation]
-    
-  \end{definition}
+\begin{definition}[Random Forests]
+  Random forests are an ensemble learning method that constructs
+  multiple decision
+  trees during training. Predictions are made by aggregating the
+  outputs of individual
+  trees (e.g., by majority voting for classification or averaging for
+  regression).
+  The randomness introduced in both the sampling of data and the selection of
+  attributes ensures reduced overfitting and increased generalization.
+\end{definition}
+
+\begin{definition}[Out-of-Bag Estimation]
+  Out-of-bag (OOB) estimation is a technique for evaluating the performance of
+  ensemble models like random forests without the need for a separate
+  validation set.
+  During training, each tree is constructed using a bootstrap sample
+  of the data, leaving
+  approximately $36.8\%$ of the samples out of the bootstrap sample.
+  These out-of-bag
+  samples are used to estimate the model's performance by testing
+  them on the trees
+  that did not use them during training.
+\end{definition}
+
+The problem with Random Forests opposed to simple decision trees is
+that they are not very transparent due to the splitting of the model
+into multiple trees. To figure out the important attributes you can
+record the average OOB-error over all trees: $e_0$, then over each
+independent attribute $j$:
+
+\begin{itemize}
+  \item Shuffle the values of the attribute $j$, such that it only gives noise
+  \item Refit the Random Forest
+  \item Record the average OOB error $e_j$
+  \item Importance of $j$ is the difference $e_j - e_0$
+\end{itemize}
+
+
+
