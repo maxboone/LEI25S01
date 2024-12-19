@@ -1,0 +1,167 @@
+\section{Data Visualisation and Dimensionality Reduction}
+
+Visualization of distributions (one-dimensional) is be
+generally done with histograms.
+
+\begin{definition}[Histograms]
+  Estimate density by defining cut points and count
+  occurrences between cut points (bins). Use equal-width
+  bins or equal-height bins. Using an incorrect amount of
+  equal-width bins can create artefacts (gaps or sharp peaks).
+\end{definition}
+
+A problem with histograms, and the driving idea with kernel density
+estimation is that there is an error involved in the answers, i.e. the
+age is not a precise integer because someone might have
+their birthday next week.
+
+Moreover, as the KDE gives a single continuous line, it is easy
+to draw multiple lines from the KDE. In this case, you
+could use it for showing differences of distribution
+between different subgroups.
+
+\begin{definition}[Kernel Density Estimation]
+  Draw a equal-width histogram, smooth the peaks
+  (i.e. gaussian) and sum each distribution.
+\end{definition}
+
+Before we smooth out the kernels that we
+calculated, we need to estimate the correct
+bandwidth $h$ where $\sigma$ is the standard
+deviation.
+
+\begin{definition}[Scott's Rule]
+  \begin{displaymath}
+    h = \sigma \times n^{\frac{1}{5}}
+  \end{displaymath}
+\end{definition}
+
+\begin{definition}[Silverman's Rule]
+  \begin{displaymath}
+    h = \left(\frac{3n}{4}\right)^{\frac{1}{5}}
+  \end{displaymath}
+\end{definition}
+
+Finally, we could also change the $h$ ourselves
+dynamically to see which value represents the data
+properly. A problem with KDE is that it smooths out
+over the minimum and maximum as well, so it shows
+that that might be out of our domain.
+
+\subsection{Dimensionality Reduction}
+
+Histograms and KDEs work for data with a single attribute,
+however, if we have multi-dimensional data that we
+want to visualize, we can use different techniques.
+
+\subsubsection{Principal Component Analysis}
+
+PCA reduces the dimensionality of multi-dimensional data
+to two-dimensional data in a linear way that allows us to
+plot data. The idea is that it finds the most interesting
+vectors in the data and plots those, with the other vector
+being orthogonal. After finding an orthogonal combination of
+vectors, it plots those. In essence, it rotates the data such
+that you look at one slice or side of the data.
+
+The principal components are orthogonal and are ordered by the
+largest variance. The dimensionality is then reduced by selecting
+the first $k$ (2 for 2D) components. This is unsupervised, and
+only works based on variance.
+
+A challenge with PCA is that some attributes might be on a different
+scale (i.e. one in kilometers, one in millimeters). In that case,
+the variance of larger-scaled featuers will be more principal.
+In that case, it helps to first scale the dimensions.
+
+\begin{definition}[Principal Component Analysis]
+  ~
+  \begin{itemize}
+    \item Standardize the data
+    \item Compute the covariance matrix $C$ ($C = \frac{1}{n - 1}X^TX$)
+    \item Decompose $C$ into the eigenvectors and eigenvalues $C = V
+      \Lambda V^T$
+    \item Sort the eigenvalues and select the top components
+  \end{itemize}
+\end{definition}
+
+\begin{definition}[PCA Scree Plot]
+  A plot that shows the (ordered) variance for the top $k$ components,
+  and can be used to determine how many components need to be shown.
+\end{definition}
+
+\subsubsection{t-SNE}
+
+An alternative to Principal Component Analysis when linear models
+do not suffice. For example, the data might have a linear subspace
+or in other words a 2D-manifold inside the multi-dimensional data.
+The idea here is that we want to draw points that are close to
+eachother in a high-dimensional space as neighbours in a low-dimensional
+space as well.
+
+First, compute the distances between every pair of datapoints in the
+high-dimensional space and the low-dimensional space. Then, compute the
+divergence between the two and finally move the points in the low-dimensional
+space to lower the divergence.
+
+The base of this algorithm is the SNE (Stochastic Neighbor Embedding), which
+expresses the similarity between two points as probabilities. This is done by
+calculating a scaled gaussian and finally making it symmetric by using both
+pairs and taking the average. This captures the notion of a
+neighbourhood, nearby points get
+a high probability and far away points deminish to zero.
+
+\begin{definition}[Stochastic Neighbor Embedding]
+  \begin{align*}
+    p_{j|i} &= \frac{
+      \exp(
+        -\normv{x_i - x_j}^2 / 2\sigma_i^2
+      )
+    }{
+      \sum_{k \neq i} \exp(
+        -\normv{x_i - x_j}^2 / 2\sigma_i^2
+      )
+    } \\
+    p_{i|i} &= 0 \\
+    p_{ij} &= \frac{p_{j|i} + p_{i|j}}{2N}
+  \end{align*}
+\end{definition}
+
+Instead of using the gaussian distribution the t-SNE uses the Student's
+t-distribution, as it has a thicker tail.
+
+\begin{definition}[t Stochastic Neighbor Embedding]
+  \begin{align*}
+    p_{j|i} = \frac{
+      \left(1 + \normv{y_i - y_j}^2\right)^{-1}
+    }{
+      \sum_{k} \sum_{l \neq k}
+      \left(1 + \normv{y_k - y_l}^2\right)^{-1}
+    }
+  \end{align*}
+\end{definition}
+
+To compare two probability distributions, we can use
+Kullback-Leibler divergences between the two conditional
+probabilities as a cost function. P is fixed in this case,
+and Q is variable and represents the low-dimensional space.
+
+\begin{definition}[Kullback-Leibler]
+  \begin{displaymath}
+    KL(P \Vert Q) = \sum_{i \neq j} p_{ij} \log{\frac{p_{ij}}{q_{ij}}}
+  \end{displaymath}
+\end{definition}
+
+Finally, there is a parameter that can be tuned named
+perplexity which affects the number of effective neighbours
+that needs to be extracted. A smaller perplexity will try to
+find local clusters and might miss larger global structures
+and larger perplexities will consider more points as neighbours,
+and might smooth out finer details.
+
+\begin{note}
+  Although perlexity, gradient descent and covariances are used
+  here, don't mistake that t-SNE trains a model. It runs on one
+  dataset and gives the outputs only for that dataset. It is not
+  a trained model of sorts.
+\end{note}

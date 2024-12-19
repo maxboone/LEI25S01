@@ -11,6 +11,7 @@
 \usepackage{cmbright}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{mathtools}
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
@@ -38,6 +39,21 @@
   after skip=\topsep,
 }
 
+\theoremstyle{note}
+\newtheorem*{note}{Note}
+\tcolorboxenvironment{note}{
+  colback=yellow!5!white,
+  boxrule=0pt,
+  boxsep=1pt,
+  left=2pt,right=2pt,top=2pt,bottom=2pt,
+  oversize=2pt,
+  sharp corners,
+  before skip=\topsep,
+  after skip=\topsep,
+}
+
+\DeclarePairedDelimiter\normv{\lVert}{\rVert}
+
 
 \usepackage[T1]{fontenc}
 
@@ -50,4 +66,6 @@
 \input{lectures/02.tex}
 \input{lectures/03.tex}
 \input{lectures/04.tex}
+\input{lectures/05.tex}
+\input{lectures/06.tex}
 \end{document}
