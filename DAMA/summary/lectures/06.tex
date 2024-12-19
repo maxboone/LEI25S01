@@ -1,0 +1,109 @@
+\section{Subgroup Discovery}
+
+Compared to a global model, we are sometimes interested
+in training local patterns, which are models that cover
+only part of the data.
+
+For example, a prediction rule
+where we have a model that only holds for the left-hand
+side could be:
+
+\begin{align*}
+  \text{status} =
+  \text{married} \cap \text{age} >= 29 \rightarrow
+  \text{salary} \geq 50000
+\end{align*}
+
+The complement can be the same or different. The main idea
+is that we can do exploratory data analysis and find dependencies
+in attributes and create a global model that has little overlap
+and resolves conflicts.
+
+\begin{definition}[Subgroup]
+  Subset of the data with unusual charactersitics (antecedent of a rule).
+\end{definition}
+
+Subgroup Discovery is a supervised paradigm, where we can do
+classification where the target is binary or nominal or regression
+where the target is numeric. Alternatively, there's EMM, where we
+have different kinds of targets.
+
+For example, if we have a binary target such as whether something
+is in a subgroup, we can draw a confusion matrix.
+
+\begin{definition}[Confusion Matrix]
+  \[
+    \begin{array}{c|c|c|c}
+      & \textbf{T} & \textbf{F} & \\ \hline
+      \textbf{T} & TP & FP & TP + FP \\ \hline
+      \textbf{F} & FN & TN & FN + TN \\ \hline
+      & TP + FN & FP + TN & Total \\
+    \end{array}
+  \]
+
+  \textbf{Significance of Diagonal Values:} High values on the
+  True Positive and True Negative means there is a positive
+  correlation. High values on the False Positive and False Negative
+  means there is a negative correlation.
+\end{definition}
+
+\subsection{Quality Measures}
+
+A quality measure for subgroups summarizes the interestingness
+of the matrix into a single number. While the quality measures
+increase the interestingness of the subgroup, the coverage of
+the subgroup might be worse.
+
+\subsubsection{Receiver Operating Characteristics (ROC)}
+
+Each subgroup forms a point in the ROC space, in terms of its
+false positive rate and true positive rate.
+
+\begin{definition}[True/False Postive Rate]
+  \begin{align*}
+    TPR &= \frac{TP}{TP + FP} \\
+    FPR &= \frac{FP}{FP + TN}
+  \end{align*}
+\end{definition}
+
+Ideally, you have both these ratios very high or low, if we
+graph them in a space then the diagonal is as good as random
+and the left-top and bottom-right corner are perfect subgroups.
+the left-bottom and top-right corner are either an empty subgroup
+or the entire database.
+
+Refining the subgroup inside the ROC-space means that you can only
+go down or to the left as it gets smaller.
+
+\subsubsection{WRAcc}
+
+A simple quality measure is the weighted relative accuracy.
+
+\begin{definition}[Weighted Relative Accuracy (WRAcc)]
+  \begin{displaymath}
+    \text{WRAcc}(A, B) = p(AB) - p(A)p(B)
+  \end{displaymath}
+
+  Balance between coverage, from the confusion matrix
+  above this would be $TT - (TT + TF)(TT + FT)$ and is
+  interesting around 0, and a range between $-.25$ to $.25$
+\end{definition}
+
+The WRAcc increases towards the top-left ROC space and decreases
+towards the bottom-right ROC space. It is additive for non-overlapping
+subgroups, and its isometrics are linear and parallel to the main
+diagonal.
+
+\begin{definition}[Cortana Quality]
+  An extension to the WRAcc is the Cortana Quality, which ensures that
+  the WRAcc scores are between -1 and 1. $\varphi_{cq}(S) = \alpha \times
+  \varphi_{w}(S)$ and $\alpha$ is constant per dataset.
+\end{definition}
+
+\subsection{Numeric Subgroup Discovery}
+
+Instead of a binary target, we might have a numeric target. The idea is
+that we find subgroups with a significantly higher or lower average value.
+The trade-off is the size of the subgroup and the average target value.
+
+
