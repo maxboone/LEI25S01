@@ -1,0 +1,64 @@
+\section{PageRank}
+
+Early search engines were maily content-based and used
+inverted indexes (from terms to pages). It was easy to
+mimic high-ranking pages and add popular but irrelevant
+items (and hide them through styling).
+
+An alternative approach to only using the content of a
+page was to use another algorithm that estimates the page
+importance by analyzing the structure of links between
+pages: PageRank. The main idea is that if a page is very
+connected that it is probably important.
+
+One problem is that this is easy to fool by artificially
+creating many pages linking to a desired page (a spam farm).
+A possible fix for this is to recursively solve the nature
+of importance, such that the source of a page link also
+has many inbound edges.
+
+This behavior can be described using a Markov process, a mathematical
+framework for systems where the next state depends only on the
+current state. For PageRank:
+
+\begin{itemize}
+  \item \textbf{Transition Matrix} A table (matrix) that represents
+    the probabilities of moving from one page to another.
+  \item \textbf{Iterative Calculation} The probabilities of landing
+    on each page are calculated repeatedly until they stabilize.
+  \item \textbf{Principal Eigenvector} The final solution,
+    representing the steady-state probabilities of the random surfer
+    being on each page, corresponds to the principal eigenvector of
+    the transition matrix.
+\end{itemize}
+
+The iterative process of this model that converges to $v'$ such that $v' = Mv'$
+can be written as the update rule:
+
+$v^{(k+1)} = Mv^{(k)}$
+
+One problem is at dead ends, these cause the probabilities to no
+longer be stochastic and all probabilities will go to zero in the
+iterative process. Similarly, a clique will also cause a probem that
+will spider trap the random visitor.
+
+A possible solution for this is to introduce teleporting or taxation,
+where the random surfer will jump to a random other (unlinked) node
+with probability $1 - \beta$. Generally, $\beta \approx 0.8$. The
+update rule in that new case is (where $u$ is a uniform probability
+vector):
+
+$v^{(k+1)} = \beta M v^{(k)} + (1 - \beta)u$
+
+\subsection{PageRank for Huge Networks}
+
+This model works well for a small network, but the internet is a
+pretty large network (take $n = 10^9$ pages and 10 outgoing links 
+per node). However, there are some targets for optimization:
+
+\begin{itemize}
+  \item $M$ is very sparse, if we have $10$ links, we have $10$ non-zeroes
+  \item Use inverted indexing to represent $M$ (node, outdegree, children)
+  \item Keep the matrix and previous vector on disk (or slow memory)
+  \item Keep only the new vector in memory, and update it in a single scan
+\end{itemize}
