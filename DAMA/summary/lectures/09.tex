@@ -1,0 +1,17 @@
+\section{Support Vector Machines}
+
+The basic intuition is that we want to separate a space
+into multiple vectors that represent the center of a cluster
+in that space. Then, if we draw a linear model that is orthogonal
+to the line between both centers we can use that as a separator.
+This works well in convex, non-verlapping distributions of equal
+density. The center that is above the line is $\mu^+$ and below
+the line is $\mu^-$.
+
+\begin{definition}[Basic Linear Classifier]
+  \begin{align*}
+    w \times x &= t \\
+    w &= \mu^+ - \mu^- \\
+    t &= \frac{1}{2} \normv{\mu^+}^2 + \frac{1}{2} \normv{\mu^-}^2
+  \end{align*}
+\end{definition}
