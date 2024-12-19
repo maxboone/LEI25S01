@@ -119,3 +119,15 @@ the gradient descent as well, with the square loss repeated:
   outliers.
 \end{definition}
 
+Avoiding overfitting can be done by lowering the learning rate
+(in other words, shrinkage). Or, stochastic gradient boosting,
+where each base learner is trained from a random sample of the
+data with fraction $f$.
+
+\subsubsection{XGBoost}
+
+A modern and highly succesful version of Gradient Boosting,
+that did some improvements such as handling of missing data,
+L1 and L2 regularization that adds a penalty to loss functions
+and it uses second-order derivatives for more accurate
+optimization.
