@@ -1,0 +1,121 @@
+\section{Boosting}
+
+Given a collection of learners in the decision tree, consider
+a class of weak learners $h_m$ which is only slightly better
+than random guessing. These are generally leafs of the decision
+tree and are also called ``decision stumps''.
+
+Build a sequence of classifiers $h_1, h_2, ..., h_k$:
+\begin{itemize}
+  \item $h_1$ is trained on the original data
+  \item $h_2$ assigns more weight to misclassified cases by $h_1$
+  \item $h_i$ assigns more weight to misclassified cases by $h_1, ..., h_{i-1}$
+\end{itemize}
+
+The final classifier is then an ensemble of $h1,...,h_k$ with
+weights $\alpha_m$ per classifier $h_m$:
+$G(x) = \text{sign}(\sum a_m h_m(x))$.
+
+\begin{definition}[Learner Weights]
+  The weight $\alpha_m$ for a learner is determined by its performance,
+  quantified by the error rate $\epsilon_m$. Higher-performing learners
+  receive greater positive weights, while poor-performing learners may
+  receive negative weights. The weight is computed as:
+  \begin{align*}
+    \alpha_m = \frac{1}{2} \ln \left( \frac{1 - \epsilon_m}{\epsilon_m} \right),
+  \end{align*}
+  where $\epsilon_m$ is the error rate of learner $m$.
+\end{definition}
+
+\begin{definition}[Data Weights]
+  On each iteration $G_m$ to $G_{m+1}$, we increase the weights
+  for $G_{m+1}$ based on the $G_m$'s misclassified cases. We increase
+  the weight by a factor $\exp(\alpha_m)$.
+\end{definition}
+
+\subsection{AdaBoost}
+
+AdaBoost is an implementation of this idea, and works as follows:
+
+\begin{definition}[AdaBoost]
+  ~
+  \begin{itemize}
+    \item Initialize the observation weights $w_i = \frac{1}{N}$
+    \item Loop over the classifiers $M$ as $m$
+      \begin{itemize}
+        \item Fit a classifier $h_m(x)$ to the training data using weights $w_i$
+        \item Compute the weighted error $\epsilon_m = \frac{
+            \sum w_i \times I(y_i \neq h_m(x_i))
+          }{
+            \sum w_i
+          }$
+        \item Compute $\alpha_m = \frac{1}{2} \ln ( \frac{1 -
+          \epsilon_m}{\epsilon_m} )$
+        \item For $i = 1$ to $N$
+          \begin{itemize}
+            \item If $x_i$ is misclassified, set data weight $w_i$ to
+              $w_i \times \exp(\alpha_m)$
+          \end{itemize}
+      \end{itemize}
+    \item Output $G(x) = \text{sign}(\sum \alpha_m h_m(x))$
+  \end{itemize}
+\end{definition}
+
+\subsection{Gradient Boosting}
+
+An alternative to AdaBoost is Gradient Boosting that has a bit more
+theory behind the way how each iteration works. It uses a cost function
+$L(u, F(x))$ which is the MSE in regression and log loss in the
+classification. This loss function is differentiable and we can
+use gradient descent here.
+
+\begin{definition}[Gradient Boosting]
+  ~
+  \begin{itemize}
+    \item Initialize the model with a constant value $F_0$, e.g. the mean
+      of target values.
+    \item For $m = 1$ to $M$
+      \begin{itemize}
+        \item Train weak learner $h_m(x)$ to minimize residuals from the current
+          prediction using the loss function (c.q. train the model to
+            the negative
+          gradients).
+        \item New prediction is $F_{m+1}(x) = F_m(x) + v \times h_m(x)$, where
+          $v$ is the learning rate (e.g. 0.1)
+      \end{itemize}
+    \item Output $F_M(x)$ as the final model
+  \end{itemize}
+\end{definition}
+
+\subsubsection{Loss Functions}
+
+By default, we look at the MSE, but there are other loss functions to use for
+the gradient descent as well, with the square loss repeated:
+
+\begin{definition}[Square Loss]
+  \begin{displaymath}
+    L(y, F) = \frac{1}{2} (y - F)^2
+  \end{displaymath}
+\end{definition}
+
+\begin{definition}[Absolute Loss]
+  \begin{displaymath}
+    L(y, F) = \left| y - F \right|
+  \end{displaymath}
+\end{definition}
+
+\begin{definition}[Huber Loss]
+  \begin{displaymath} L(y, F) =
+    \begin{cases}
+      \frac{1}{2} (y - F)^2 & \text{if } |y - F| \leq
+      \delta \\
+      \delta \left( |y - F| - \frac{1}{2} \delta \right) &
+      \text{if } |y - F| > \delta
+    \end{cases}
+  \end{displaymath}
+
+  Where $\delta$ refers to a parameter that decreases how
+  extreme the output should be with respect to higher
+  outliers.
+\end{definition}
+
