@@ -15,3 +15,90 @@ the line is $\mu^-$.
     t &= \frac{1}{2} \normv{\mu^+}^2 + \frac{1}{2} \normv{\mu^-}^2
   \end{align*}
 \end{definition}
+
+One of the problems is that there are many possible classifiers
+(or decision bounds) that are equally as good on the training set.
+One of the reasons for this is that the decision boundary does not
+take into account how much slack there is between the two groups.
+
+Support Vector Machines use the same idea, but try to maximize the margin
+between these two centers. Given the $w$ vector, we can minimize it if
+we try to minimize the length of $w$ given by $\normv{w}$, subject to that
+all the points are outside the margin:
+
+\begin{align*}
+  w^*, t^* = \arg_{w,t} \min \frac{1}{2} \normv{w}^2 \\
+  y_i(w * x_i - t) \geq 1, 1 \leq i \leq n
+\end{align*}
+
+This can be rewritten to a maximization problem
+based on Lagrange multipliers:
+
+\begin{align*}
+  a_1^*, ..., a_n^* = \arg_{a_1,...,a_n} \max -
+  \frac{1}{2} \sum_{i=1}^n \sum_{j_1}^n a_ia_jy_iy_jx_i \dot x_j +
+  \sum_{i=1}^n a_i \\
+  a_i \geq 0, 1 \leq i \leq n \\
+  \sum_{i=1}^n a_iy_i = 0
+\end{align*}
+
+Here, support vectors are the data points that support the margin
+such that $a_i > 0$ and the decision boundary $w$ is given by $w =
+\sum_{i=1}^n a_iy_ix_i$.
+
+However, many problems are not linearly separable, the distribution
+might be overlapping or there might be some concave concept (i.e. a circle
+surrounded by a ring). For overlapping distributions, we can add a penalty
+factor that allows some mistakes in the training. This factor is also called
+the complexity parameter $C$ and the slack variable $\xi$:
+
+\begin{align*}
+  w^*, t^*, \psi^* = \arg_{w,t} \min \frac{1}{2} \normv{w}^2 + C
+  \sum_{i+1}^n \xi_i
+\end{align*}
+
+A high C means that each error incurs a high penalty, a low C permits
+more errors. In other words, the C value is a trade-off between margin
+maximisation and slack minimization.
+
+\subsection{Non-linear SVMs}
+
+Instead of drawing a linear model between the points in the space we
+can rewrite the SVM to fit a maximum-margin hyperplane. The main idea
+is that we add a new dimension to the space that allows us to construct
+a hyperplane. In the context of an SVM we can define a kernel, such that
+the model does not generate a new dimension, but can do operations on
+the features such as squaring them:
+
+\begin{align*}
+  \phi\left(\left(a, b\right)\right) = (a, b, a^2 + b^2)
+\end{align*}
+
+The dot product in the SVM definition is the function that we replace
+by a (non-linear) kernel, and can re-use the rest of the definition:
+
+\begin{align*}
+  k(x, y) = x \cdot y + \|x\|^2 \|y\|^2
+\end{align*}
+
+\begin{definition}[Support Vector Machine]
+  \begin{align*}
+    a_1^*, \ldots, a_n^* &= \arg\max_{a_1,\ldots,a_n} \left(
+      -\frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n a_i a_j y_i y_j k(x_i, x_j)
+    + \sum_{i=1}^n a_i \right) \\
+    \text{subject to:} \quad &a_i \geq 0, \quad 1 \leq i \leq n, \\
+    &\sum_{i=1}^n a_i y_i = 0
+  \end{align*}
+\end{definition}
+
+Example kernels are:
+\begin{itemize}
+  \item Dot product: $k(x_i, x_j) = x_i \cdot x_j$
+  \item Polynomial: $k(x_i, x_j) = (x_i \cdot x_j + c)^d$
+  \item Gaussian (RBF): $k(x_i, x_j) = \exp\left(-\frac{\|x_i -
+    x_j\|^2}{2\sigma^2}\right)$
+  \item Radial Basis Function: $k(x_i, x_j) = \exp\left(-\gamma \|x_i
+    - x_j\|^2\right)$
+  \item Sigmoid: $k(x_i, x_j) = \tanh(\alpha x_i \cdot x_j + c)$
+\end{itemize}
+
